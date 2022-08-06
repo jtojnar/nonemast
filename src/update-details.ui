@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<template class="UpdateDetails" parent="GtkBox">
+		<property name="orientation">vertical</property>
+		<child>
+			<object class="AdwPreferencesGroup">
+				<property name="title" translatable="yes">Changelog</property>
+				<child>
+					<object class="AdwActionRow">
+						<property name="use-markup">true</property>
+						<binding name="title">
+							<lookup name="changelog-link">
+								<lookup name="update">UpdateDetails</lookup>
+							</lookup>
+						</binding>
+					</object>
+				</child>
+				<property name="header-suffix">
+					<object class="GtkRevealer">
+						<binding name="reveal-child">
+							<lookup name="changes-not-reviewed">
+								<lookup name="update">UpdateDetails</lookup>
+							</lookup>
+						</binding>
+						<child>
+							<object class="GtkButton">
+								<property name="action-name">win.mark-as-reviewed</property>
+								<binding name="action-target">
+									<lookup name="subject_gvariant">
+										<lookup name="update">UpdateDetails</lookup>
+									</lookup>
+								</binding>
+								<property name="child">
+									<object class="AdwButtonContent">
+										<property name="icon-name">emblem-ok-symbolic</property>
+										<property name="label" translatable="yes">Mark as reviewed</property>
+									</object>
+								</property>
+								<style>
+									<class name="flat"/>
+								</style>
+							</object>
+						</child>
+					</object>
+				</property>
+			</object>
+		</child>
+		<child>
+			<object class="AdwPreferencesGroup">
+				<property name="title" translatable="yes">Commits</property>
+				<child>
+					<object class="GtkListView" id="commits_list_view">
+						<property name="factory">
+							<object class="GtkBuilderListItemFactory">
+								<property name="resource">/cz/ogion/Nonemast/update-details-commit-item.ui</property>
+							</object>
+						</property>
+						<property name="model">
+							<object class="GtkNoSelection">
+								<binding name="model">
+									<lookup name="commits">
+										<lookup name="update">UpdateDetails</lookup>
+									</lookup>
+								</binding>
+							</object>
+						</property>
+					</object>
+				</child>
+			</object>
+		</child>
+	</template>
+</interface>

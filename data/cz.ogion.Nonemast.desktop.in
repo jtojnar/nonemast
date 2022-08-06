@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Not Nearly Enough Masking Tape
+Exec=nonemast
+Icon=cz.ogion.Nonemast
+Terminal=false
+Type=Application
+Categories=Development;GNOME;
+StartupNotify=true

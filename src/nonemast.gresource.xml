@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+	<gresource prefix="/cz/ogion/Nonemast">
+		<file compressed="true" preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
+		<file preprocess="xml-stripblanks">window.ui</file>
+		<file preprocess="xml-stripblanks">update-details.ui</file>
+		<file preprocess="xml-stripblanks">update-details-commit-item.ui</file>
+		<file preprocess="xml-stripblanks">update-item.ui</file>
+	</gresource>
+	<gresource prefix="/cz/ogion/Nonemast/icons/scalable/actions/">
+	  <file preprocess="xml-stripblanks" alias="test-pass-symbolic.svg">../data/icons/test-pass-symbolic.svg</file>
+	</gresource>
+</gresources>

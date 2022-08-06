@@ -1,0 +1,9 @@
+data/cz.ogion.Nonemast.desktop.in
+data/cz.ogion.Nonemast.appdata.xml.in
+data/cz.ogion.Nonemast.gschema.xml
+src/main.py
+src/update-details.ui
+src/update-details-commit-item.ui
+src/update-item.ui
+src/window.py
+src/window.ui

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>cz.ogion.Nonemast.desktop</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>MIT</project_license>
+	<description>
+		<p>Tool for reviewing GNOME update Nixpkgs PRs.</p>
+	</description>
+	<screenshots>
+		<screenshot type="default">
+			<image>https://github.com/jtojnar/nonemast/raw/HEAD/data/screenshot.png</image>
+			<caption>Main view of GNOME 43 update</caption>
+		</screenshot>
+	</screenshots>
+</component>
