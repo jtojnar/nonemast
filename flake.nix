@@ -88,6 +88,7 @@
           checkInputs = with final.python3.pkgs; [
             final.git
             pytest
+            pytest-tap
           ];
 
           doCheck = true;

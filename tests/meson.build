@@ -4,11 +4,22 @@
 tests_enabled = get_option('tests')
 pytest = find_program('py.test', required: tests_enabled)
 find_program('git', required: tests_enabled)
+python.find_installation(
+  'python3',
+  modules: [
+    'pytest_tap',
+  ],
+  required: tests_enabled,
+)
 
 if pytest.found()
   test(
     'Unit tests',
     pytest,
+    args: [
+      '--tap-stream',
+    ],
+    protocol: 'tap',
     workdir: meson.project_source_root(),
   )
 endif
