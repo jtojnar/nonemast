@@ -12,6 +12,7 @@ from typing import List, Optional
 import html
 import re
 import threading
+from .bind_property_full import bind_property_full
 
 
 def make_error_dialog(parent, text, **kwargs):
@@ -43,10 +44,22 @@ def find_changelog_link(lines: List[str]) -> Optional[str]:
 class PackageUpdate(GObject.Object):
     __gtype_name__ = "PackageUpdate"
 
+    subject_gvariant = GObject.Property(type=GObject.TYPE_VARIANT)
+
     def __init__(self, subject: str, commits: List[Ggit.Commit], **kwargs):
         super().__init__(**kwargs)
         self._subject = subject
         self._commits = Gio.ListStore.new(CommitInfo)
+
+        bind_property_full(
+            source=self,
+            source_property="subject",
+            target=self,
+            target_property="subject-gvariant",
+            flags=GObject.BindingFlags.SYNC_CREATE,
+            transform_to=lambda subject: GLib.Variant.new_string(subject),
+        )
+
         self._message_lines = []
         for commit in commits:
             self._commits.append(CommitInfo(commit=commit))
@@ -76,10 +89,6 @@ class PackageUpdate(GObject.Object):
     @GObject.Property(type=str)
     def subject(self):
         return self._subject
-
-    @GObject.Property(type=GObject.TYPE_VARIANT)
-    def subject_gvariant(self):
-        return GLib.Variant.new_string(self._subject)
 
     @GObject.Property(type=str)
     def changelog_link(self):

@@ -27,6 +27,7 @@ configure_file(
 
 nonemast_sources = [
   '__init__.py',
+  'bind_property_full.py',
   'main.py',
   'window.py',
 ]
