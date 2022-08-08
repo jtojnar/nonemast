@@ -8,8 +8,12 @@ from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gtk
 from collections import OrderedDict
+from pathlib import Path
 from typing import List, Optional
 import re
+import shutil
+import subprocess
+import tempfile
 import threading
 from .package_update import PackageUpdate
 
@@ -25,6 +29,28 @@ def make_error_dialog(parent, text, **kwargs):
     )
     dialog.connect("response", lambda dialog, response_id: Gtk.Window.destroy(dialog))
     return dialog
+
+
+def open_commit_message_in_editor(parent: Gtk.Window, path: Path):
+    """Open path in a text editor and wait for it to quit."""
+    editor = None
+    if shutil.which("re.sonny.Commit") is not None:
+        editor = ["re.sonny.Commit", path]
+    elif shutil.which("subl") is not None:
+        editor = ["subl", "--wait", path]
+    elif shutil.which("gedit") is not None:
+        editor = ["gedit", "--wait", path]
+
+    if editor is None:
+
+        def show_error():
+            make_error_dialog(
+                parent, "Unable to find a text editor for editing commit messages."
+            ).show()
+
+        GLib.idle_add(show_error)
+    else:
+        subprocess.check_call(editor)
 
 
 def get_merge_base(
@@ -110,6 +136,10 @@ class NonemastWindow(Adw.ApplicationWindow):
         action.connect("activate", self.mark_as_reviewed)
         self.add_action(action)
 
+        action = Gio.SimpleAction.new("edit-commit-message", GLib.VariantType.new("s"))
+        action.connect("activate", self.edit_commit_message)
+        self.add_action(action)
+
         thread = threading.Thread(
             target=self.load_commit_history,
             daemon=True,
@@ -125,6 +155,50 @@ class NonemastWindow(Adw.ApplicationWindow):
             message=commit_message,
             author=signature,
         )
+
+    def edit_commit_message(self, action, parameter) -> None:
+        original_commit_subject = parameter.get_string()
+
+        def editing_thread():
+            update = self.updates_store.get_item(
+                self._updates_subject_indices[original_commit_subject]
+            )
+            update.props.commit_message_is_edited = True
+            try:
+                old_commit_message = update.props.final_commit_message.strip()
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    commit_file_path = Path(temp_dir) / "COMMIT_EDITMSG"
+                    with open(commit_file_path, "w") as commit_file:
+                        commit_file.write(old_commit_message)
+
+                    # Blocks the thread until editing finishes.
+                    open_commit_message_in_editor(self, commit_file_path)
+
+                    with open(commit_file_path) as commit_file:
+                        new_commit_message = commit_file.read().strip()
+
+                if new_commit_message == "":
+                    return
+
+                if new_commit_message == old_commit_message:
+                    return
+
+                commit_message = (
+                    f"amend! {original_commit_subject}\n\n{new_commit_message}"
+                )
+                signature = self.make_git_signature()
+                self.create_empty_commit(
+                    target_subject=original_commit_subject,
+                    message=commit_message,
+                    author=signature,
+                )
+            finally:
+                update.props.commit_message_is_edited = False
+
+        thread = threading.Thread(
+            target=editing_thread,
+        )
+        thread.start()
 
     def make_git_signature(self) -> Optional[Ggit.Signature]:
         try:

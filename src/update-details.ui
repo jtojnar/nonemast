@@ -57,6 +57,50 @@
 						</binding>
 					</object>
 				</child>
+				<property name="header-suffix">
+					<object class="GtkStack">
+						<binding name="visible-child-name">
+							<lookup name="editing-stack-page">
+								<lookup name="update">UpdateDetails</lookup>
+							</lookup>
+						</binding>
+						<child>
+							<object class="GtkStackPage">
+								<property name="name">not-editing</property>
+								<property name="child">
+									<object class="GtkButton">
+										<property name="halign">end</property>
+										<property name="action-name">win.edit-commit-message</property>
+										<binding name="action-target">
+											<lookup name="subject_gvariant">
+												<lookup name="update">UpdateDetails</lookup>
+											</lookup>
+										</binding>
+										<property name="child">
+											<object class="AdwButtonContent">
+												<property name="icon-name">edit-symbolic</property>
+												<property name="label" translatable="yes">Edit</property>
+											</object>
+										</property>
+										<style>
+											<class name="flat"/>
+										</style>
+									</object>
+								</property>
+							</object>
+						</child>
+						<child>
+							<object class="GtkStackPage">
+								<property name="name">editing</property>
+								<property name="child">
+									<object class="GtkLabel">
+										<property name="label" translatable="yes">Currently editing</property>
+									</object>
+								</property>
+							</object>
+						</child>
+					</object>
+				</property>
 			</object>
 		</child>
 		<child>

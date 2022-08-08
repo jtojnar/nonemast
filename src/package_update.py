@@ -61,6 +61,8 @@ class PackageUpdate(GObject.Object):
     __gtype_name__ = "PackageUpdate"
 
     subject_gvariant = GObject.Property(type=GObject.TYPE_VARIANT)
+    commit_message_is_edited = GObject.Property(type=bool, default=False)
+    editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
 
     def __init__(self, subject: str, commits: List[Ggit.Commit], **kwargs):
@@ -88,6 +90,15 @@ class PackageUpdate(GObject.Object):
             target_property="final-commit-message-rich",
             flags=GObject.BindingFlags.SYNC_CREATE,
             transform_to=lambda message: linkify_html(message),
+        )
+
+        bind_property_full(
+            source=self,
+            source_property="commit-message-is-edited",
+            target=self,
+            target_property="editing-stack-page",
+            flags=GObject.BindingFlags.SYNC_CREATE,
+            transform_to=lambda editing: "editing" if editing else "not-editing",
         )
 
     def add_commit(self, commit: Ggit.Commit) -> None:
