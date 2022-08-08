@@ -137,6 +137,10 @@ def get_base_commit_subject(subject: str) -> str:
     return re.sub(r"^(fixup! |squash! |amend! )+", "", subject)
 
 
+def signature_to_string(signature: Ggit.Signature) -> str:
+    return f"{signature.get_name()} <{signature.get_email()}>"
+
+
 @Gtk.Template(resource_path="/cz/ogion/Nonemast/update-details.ui")
 class UpdateDetails(Gtk.Box):
     __gtype_name__ = "UpdateDetails"
@@ -194,15 +198,26 @@ class NonemastWindow(Adw.ApplicationWindow):
         )
         thread.start()
 
-    def mark_as_reviewed(self, action, parameter):
+    def mark_as_reviewed(self, action, parameter) -> None:
         original_commit_subject = parameter.get_string()
-        head: Ggit.OId = self._repo.get_head().get_target()
-        current_commit: Ggit.Commit = self._repo.lookup(head, Ggit.Commit)
+        signature = self.make_git_signature()
+        commit_message = f"squash! {original_commit_subject}\n\nChangelog-Reviewed-By: {signature_to_string(signature)}"
+        self.create_empty_commit(
+            target_subject=original_commit_subject,
+            message=commit_message,
+            author=signature,
+        )
 
+    def make_git_signature(self) -> Optional[Ggit.Signature]:
         try:
             config: Ggit.Config = self._repo.get_config().snapshot()
             author_name = config.get_string("user.name")
             author_email = config.get_string("user.email")
+
+            return Ggit.Signature.new_now(
+                name=author_name,
+                email=author_email,
+            )
         except:
             make_error_dialog(
                 parent=self,
@@ -210,22 +225,25 @@ class NonemastWindow(Adw.ApplicationWindow):
                 secondary_text="Please <a href='https://www.git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup#_your_identity'>configure Git with your name and e-mail address</a> for commit authorship.",
                 secondary_use_markup=True,
             ).show()
-            return
 
+        return None
+
+    def create_empty_commit(
+        self,
+        target_subject: str,
+        message: str,
+        author: Ggit.Signature,
+    ) -> None:
+        head: Ggit.OId = self._repo.get_head().get_target()
+        current_commit: Ggit.Commit = self._repo.lookup(head, Ggit.Commit)
         try:
-            author = Ggit.Signature.new_now(
-                name=author_name,
-                email=author_email,
-            )
-            commit_message = f"squash! {original_commit_subject}\n\nChangelog-Reviewed-By: {author_name}"
-
             # Create an empty squash commit adding Changelog-Reviewed-By tag to the commit message.
             new_commit_oid: Ggit.OId = self._repo.create_commit(
                 update_ref="HEAD",
                 author=author,
                 committer=author,
                 message_encoding="UTF-8",
-                message=commit_message,
+                message=message,
                 tree=current_commit.get_tree(),
                 parents=[current_commit],
             )
@@ -238,7 +256,7 @@ class NonemastWindow(Adw.ApplicationWindow):
 
         new_commit: Ggit.Commit = self._repo.lookup(new_commit_oid, Ggit.Commit)
         update = self.updates_store.get_item(
-            self._updates_subject_indices[original_commit_subject]
+            self._updates_subject_indices[target_subject]
         )
         update.props.changes_reviewed = True
         update.props.changes_not_reviewed = False
