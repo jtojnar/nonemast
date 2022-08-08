@@ -5,6 +5,7 @@ from gi.repository import Ggit
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
+from linkify_it import LinkifyIt
 from typing import List, Optional
 import html
 import re
@@ -22,6 +23,24 @@ def find_changelog_link(lines: List[str]) -> Optional[str]:
         if line.startswith("https://"):
             return line
     return None
+
+
+def linkify_html(text: str) -> str:
+    linkify = LinkifyIt()
+
+    if not linkify.test(text):
+        return ""
+
+    result = ""
+    last_index = 0
+    for match in linkify.match(text):
+        link = f"<a href='{html.escape(match.url)}'>{html.escape(match.text)}</a>"
+        result += html.escape(text[last_index : match.index]) + link
+        last_index = match.last_index
+
+    result += text[last_index:]
+
+    return result
 
 
 class CommitInfo(GObject.Object):
@@ -42,11 +61,13 @@ class PackageUpdate(GObject.Object):
     __gtype_name__ = "PackageUpdate"
 
     subject_gvariant = GObject.Property(type=GObject.TYPE_VARIANT)
+    final_commit_message_rich = GObject.Property(type=str)
 
     def __init__(self, subject: str, commits: List[Ggit.Commit], **kwargs):
         super().__init__(**kwargs)
         self._subject = subject
         self._commits = Gio.ListStore.new(CommitInfo)
+        self._message_lines = []
 
         bind_property_full(
             source=self,
@@ -57,14 +78,23 @@ class PackageUpdate(GObject.Object):
             transform_to=lambda subject: GLib.Variant.new_string(subject),
         )
 
-        self._message_lines = []
         for commit in commits:
             self.add_commit(commit)
+
+        bind_property_full(
+            source=self,
+            source_property="final-commit-message",
+            target=self,
+            target_property="final-commit-message-rich",
+            flags=GObject.BindingFlags.SYNC_CREATE,
+            transform_to=lambda message: linkify_html(message),
+        )
 
     def add_commit(self, commit: Ggit.Commit) -> None:
         self._commits.append(CommitInfo(commit=commit))
 
         subject, *msg_lines = commit.get_message().splitlines()
+        old_message_lines = self._message_lines
         if subject.startswith("fixup! "):
             return
         elif subject.startswith("amend! "):
@@ -75,6 +105,8 @@ class PackageUpdate(GObject.Object):
             self._message_lines += [subject]
 
         self._message_lines += msg_lines
+        if old_message_lines != self._message_lines:
+            self.notify("final-commit-message")
 
         self.props.changes_reviewed = any(
             has_changelog_reviewed_tag(line) for line in self._message_lines
@@ -89,6 +121,14 @@ class PackageUpdate(GObject.Object):
     @GObject.Property(type=str)
     def subject(self):
         return self._subject
+
+    @GObject.Property(type=str)
+    def final_commit_message(self):
+        return "\n".join(self._message_lines)
+
+    @final_commit_message.setter
+    def final_commit_message(self, message):
+        self._message_lines = message.splitlines()
 
     @GObject.Property(type=str)
     def changelog_link(self):

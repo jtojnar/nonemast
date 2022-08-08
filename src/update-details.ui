@@ -45,6 +45,22 @@
 		</child>
 		<child>
 			<object class="AdwPreferencesGroup">
+				<property name="title" translatable="yes">Final commit message</property>
+				<child>
+					<object class="AdwActionRow">
+						<property name="use-markup">true</property>
+						<property name="title-selectable">true</property>
+						<binding name="title">
+							<lookup name="final-commit-message-rich">
+								<lookup name="update">UpdateDetails</lookup>
+							</lookup>
+						</binding>
+					</object>
+				</child>
+			</object>
+		</child>
+		<child>
+			<object class="AdwPreferencesGroup">
 				<property name="title" translatable="yes">Commits</property>
 				<child>
 					<object class="GtkListView" id="commits_list_view">

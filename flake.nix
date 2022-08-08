@@ -82,6 +82,7 @@
 
           propagatedBuildInputs = with final.python3.pkgs; [
             pygobject3
+            linkify-it-py
           ];
 
           # Breaks some setup hooks.
