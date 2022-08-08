@@ -52,12 +52,12 @@ class PackageUpdate(GObject.Object):
             self._commits.append(CommitInfo(commit=commit))
 
             subject, *msg_lines = commit.get_message().splitlines()
-            if subject.startswith('fixup! '):
+            if subject.startswith("fixup! "):
                 continue
-            elif subject.startswith('amend! '):
+            elif subject.startswith("amend! "):
                 # Starting from scratch.
                 self._message_lines = []
-            elif not subject.startswith('squash! '):
+            elif not subject.startswith("squash! "):
                 # The subject from non-squash commits remains.
                 self._message_lines += [subject]
 
