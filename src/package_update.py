@@ -100,6 +100,10 @@ class PackageUpdate(GObject.Object):
         elif subject.startswith("amend! "):
             # Starting from scratch.
             self._message_lines = []
+            # Drop empty line after subject.
+            match msg_lines:
+                case ["", *rest]:
+                    msg_lines = rest
         elif not subject.startswith("squash! "):
             # The subject from non-squash commits remains.
             self._message_lines += [subject]

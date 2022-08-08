@@ -7,6 +7,7 @@ gi.require_version("Ggit", "1.0")
 
 from gi.repository import Ggit
 from typing import List
+import pytest
 import subprocess
 import tempfile
 
@@ -112,5 +113,18 @@ def test_autosquashing_double_squash():
             "Hello",
             "squash! Hello\n\nfoo",
             "squash! Hello\n\nfoo",
+        ]
+    )
+
+
+# There is a bug in git where if a squash commit is followed by an amend commit,
+# the latter will be treated as a squash commit.
+@pytest.mark.xfail
+def test_autosquashing_amend_after_squash():
+    check_autosquashing(
+        [
+            "Hello",
+            "squash! Hello\n\nfoo",
+            "amend! Hello\n\nbar",
         ]
     )
