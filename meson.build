@@ -37,6 +37,7 @@ application_id = 'cz.ogion.Nonemast'
 subdir('data')
 subdir('src')
 subdir('po')
+subdir('tests')
 
 gnome.post_install(
   gtk_update_icon_cache: true,

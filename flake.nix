@@ -28,7 +28,7 @@
               python3.pkgs.black
             ]);
 
-            inherit (pkgs.nonemast) buildInputs propagatedBuildInputs;
+            inherit (pkgs.nonemast) buildInputs propagatedBuildInputs checkInputs;
           };
         };
 
@@ -84,6 +84,23 @@
             pygobject3
             linkify-it-py
           ];
+
+          checkInputs = with final.python3.pkgs; [
+            final.git
+            pytest
+          ];
+
+          doCheck = true;
+
+          checkPhase = ''
+            runHook preCheck
+
+            # buildPythonPackage has doCheck enable installCheckPhase but ninja registers regular checkPhase
+            # so we need to run it manually.
+            meson test --print-errorlogs
+
+            runHook postCheck
+          '';
 
           # Breaks some setup hooks.
           strictDeps = false;

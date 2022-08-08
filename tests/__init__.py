@@ -1,10 +1,2 @@
 # SPDX-FileCopyrightText: 2022 Jan Tojnar
 # SPDX-License-Identifier: MIT
-
-_build/
-installed/
-result
-
-__pycache__/
-*.pyc
-.pytest_cache/
