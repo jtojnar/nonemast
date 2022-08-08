@@ -93,14 +93,6 @@ class PackageUpdate(GObject.Object):
     def changes_reviewed(self, changes_reviewed):
         self._changes_reviewed = changes_reviewed
 
-    @GObject.Property(type=bool, default=False)
-    def changes_not_reviewed(self):
-        return not self._changes_reviewed
-
-    @changes_not_reviewed.setter
-    def changes_not_reviewed(self, changes_not_reviewed):
-        self._changes_reviewed = not changes_not_reviewed
-
     @GObject.Property(type=Gio.ListStore)
     def commits(self):
         return self._commits
@@ -147,6 +139,9 @@ class UpdateDetails(Gtk.Box):
 
     _update = None
 
+    _binding = None
+    changes_not_reviewed = GObject.Property(type=bool, default=False)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -157,6 +152,14 @@ class UpdateDetails(Gtk.Box):
     @update.setter
     def update(self, update):
         self._update = update
+        if self._binding is not None:
+            self._binding.unbind()
+        self._binding = self._update.bind_property(
+            "changes-reviewed",
+            self,
+            "changes-not-reviewed",
+            GObject.BindingFlags.INVERT_BOOLEAN | GObject.BindingFlags.SYNC_CREATE,
+        )
 
 
 @Gtk.Template(resource_path="/cz/ogion/Nonemast/window.ui")
@@ -259,7 +262,6 @@ class NonemastWindow(Adw.ApplicationWindow):
             self._updates_subject_indices[target_subject]
         )
         update.props.changes_reviewed = True
-        update.props.changes_not_reviewed = False
         update.props.commits.append(CommitInfo(commit=new_commit))
 
     def on_selected_item_changed(self, selection, prop_name):

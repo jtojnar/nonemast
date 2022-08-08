@@ -18,9 +18,7 @@
 				<property name="header-suffix">
 					<object class="GtkRevealer">
 						<binding name="reveal-child">
-							<lookup name="changes-not-reviewed">
-								<lookup name="update">UpdateDetails</lookup>
-							</lookup>
+							<lookup name="changes-not-reviewed">UpdateDetails</lookup>
 						</binding>
 						<child>
 							<object class="GtkButton">
