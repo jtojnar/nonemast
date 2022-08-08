@@ -51,8 +51,16 @@ class PackageUpdate(GObject.Object):
         for commit in commits:
             self._commits.append(CommitInfo(commit=commit))
 
-            # Drop the subject line.
-            msg_lines = commit.get_message().splitlines()[1:]
+            subject, *msg_lines = commit.get_message().splitlines()
+            if subject.startswith('fixup! '):
+                continue
+            elif subject.startswith('amend! '):
+                # Starting from scratch.
+                self._message_lines = []
+            elif not subject.startswith('squash! '):
+                # The subject from non-squash commits remains.
+                self._message_lines += [subject]
+
             self._message_lines += msg_lines
 
         self._changes_reviewed = any(
