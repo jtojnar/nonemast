@@ -29,6 +29,7 @@ nonemast_sources = [
   '__init__.py',
   'bind_property_full.py',
   'main.py',
+  'package_update.py',
   'window.py',
 ]
 
