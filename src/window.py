@@ -62,25 +62,28 @@ class PackageUpdate(GObject.Object):
 
         self._message_lines = []
         for commit in commits:
-            self._commits.append(CommitInfo(commit=commit))
+            self.add_commit(commit)
 
-            subject, *msg_lines = commit.get_message().splitlines()
-            if subject.startswith("fixup! "):
-                continue
-            elif subject.startswith("amend! "):
-                # Starting from scratch.
-                self._message_lines = []
-            elif not subject.startswith("squash! "):
-                # The subject from non-squash commits remains.
-                self._message_lines += [subject]
+    def add_commit(self, commit: Ggit.Commit) -> None:
+        self._commits.append(CommitInfo(commit=commit))
 
-            self._message_lines += msg_lines
+        subject, *msg_lines = commit.get_message().splitlines()
+        if subject.startswith("fixup! "):
+            return
+        elif subject.startswith("amend! "):
+            # Starting from scratch.
+            self._message_lines = []
+        elif not subject.startswith("squash! "):
+            # The subject from non-squash commits remains.
+            self._message_lines += [subject]
 
-        self._changes_reviewed = any(
+        self._message_lines += msg_lines
+
+        self.props.changes_reviewed = any(
             has_changelog_reviewed_tag(line) for line in self._message_lines
         )
         url = find_changelog_link(self._message_lines)
-        self._changelog_link = (
+        self.props.changelog_link = (
             f"<a href='{html.escape(url)}'>{html.escape(url)}</a>"
             if url is not None
             else "No changelog detected."
@@ -93,6 +96,10 @@ class PackageUpdate(GObject.Object):
     @GObject.Property(type=str)
     def changelog_link(self):
         return self._changelog_link
+
+    @changelog_link.setter
+    def changelog_link(self, changelog_link: str) -> None:
+        self._changelog_link = changelog_link
 
     @GObject.Property(type=bool, default=False)
     def changes_reviewed(self):
@@ -270,8 +277,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         update = self.updates_store.get_item(
             self._updates_subject_indices[target_subject]
         )
-        update.props.changes_reviewed = True
-        update.props.commits.append(CommitInfo(commit=new_commit))
+        update.add_commit(new_commit)
 
     def on_selected_item_changed(self, selection, prop_name):
         self.do_select_update(selection.get_selected_item())
