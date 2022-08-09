@@ -129,6 +129,8 @@ class NonemastWindow(Adw.ApplicationWindow):
     updates_list_error = Gtk.Template.Child()
     updates_list_view = Gtk.Template.Child()
 
+    updates_selection = Gtk.Template.Child()
+
     # Mapping between updates’ commit subjects and their indices in updates_store.
     _updates_subject_indices = {}
 
@@ -144,11 +146,7 @@ class NonemastWindow(Adw.ApplicationWindow):
 
         self._repo_path = repo_path
 
-        self._updates_selection = Gtk.SingleSelection(model=self.updates_store)
-        self.updates_list_view.set_model(self._updates_selection)
-        self._updates_selection.connect(
-            "notify::selected-item", self.on_selected_item_changed
-        )
+        self.updates_selection.set_model(self.updates_store)
 
         action = Gio.SimpleAction.new("mark-as-reviewed", GLib.VariantType.new("s"))
         action.connect("activate", self.mark_as_reviewed)
@@ -278,6 +276,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         )
         update.add_commit(new_commit)
 
+    @Gtk.Template.Callback()
     def on_selected_item_changed(self, selection, prop_name):
         self.do_select_update(selection.get_selected_item())
 

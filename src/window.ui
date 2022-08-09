@@ -82,6 +82,11 @@
 																<property name="resource">/cz/ogion/Nonemast/update-item.ui</property>
 															</object>
 														</property>
+														<property name="model">
+															<object class="GtkSingleSelection" id="updates_selection">
+																<signal name="notify::selected-item" handler="on_selected_item_changed" />
+															</object>
+														</property>
 													</object>
 												</child>
 											</object>
