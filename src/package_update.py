@@ -105,7 +105,8 @@ class PackageUpdate(GObject.Object):
         self._commits.append(CommitInfo(commit=commit))
 
         subject, *msg_lines = commit.get_message().splitlines()
-        old_message_lines = self._message_lines
+        # Clone list so we can detect changes.
+        old_message_lines = list(self._message_lines)
         if subject.startswith("fixup! "):
             return
         elif subject.startswith("amend! "):
