@@ -30,6 +30,13 @@
 										<property name="tooltip-text" translatable="yes">Search</property>
 									</object>
 								</child>
+								<child>
+									<object class="GtkMenuButton">
+										<property name="icon-name">funnel-symbolic</property>
+										<property name="menu-model">filter-menu</property>
+										<property name="tooltip-text" translatable="yes">Filter</property>
+									</object>
+								</child>
 								<child type="end">
 									<object class="GtkMenuButton">
 										<property name="icon-name">open-menu-symbolic</property>
@@ -216,4 +223,21 @@
 		</section>
 	</menu>
 	<object class="GtkCustomFilter" id="updates_search_filter"/>
+	<menu id="filter-menu">
+		<item>
+			<attribute name="label" translatable="yes">_All</attribute>
+			<attribute name="action">win.filter</attribute>
+			<attribute name="target">all</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">_Reviewed</attribute>
+			<attribute name="action">win.filter</attribute>
+			<attribute name="target">reviewed</attribute>
+		</item>
+		<item>
+			<attribute name="label" translatable="yes">_Unreviewed</attribute>
+			<attribute name="action">win.filter</attribute>
+			<attribute name="target">unreviewed</attribute>
+		</item>
+	</menu>
 </interface>

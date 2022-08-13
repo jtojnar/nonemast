@@ -147,6 +147,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         self._repo_path = repo_path
 
         self._search_query = None
+        self._filter_reviewed = None
 
         self.props.updates = Gio.ListStore.new(PackageUpdate)
 
@@ -162,17 +163,41 @@ class NonemastWindow(Adw.ApplicationWindow):
         action.connect("activate", self.view_commit)
         self.add_action(action)
 
+        action = Gio.SimpleAction.new_stateful(
+            name="filter",
+            parameter_type=GLib.VariantType.new("s"),
+            state=GLib.Variant.new_string("all"),
+        )
+        action.connect("change-state", self.on_toggle_filter)
+        self.add_action(action)
+
         thread = threading.Thread(
             target=self.load_commit_history,
             daemon=True,
         )
         thread.start()
 
-    def filter_func(self, update: PackageUpdate):
-        if self._search_query is not None:
-            return self._search_query in update.props.subject
+    def on_toggle_filter(self, action, variant):
+        match variant.get_string():
+            case "reviewed":
+                self._filter_reviewed = True
+            case "unreviewed":
+                self._filter_reviewed = False
+            case other:
+                self._filter_reviewed = None
+        action.set_state(variant)
+        self.updates_search_filter.set_filter_func(self.filter_func)
 
-        return True
+    def filter_func(self, update: PackageUpdate):
+        search_matches = (
+            self._search_query is None or self._search_query in update.props.subject
+        )
+        filter_matches = (
+            self._filter_reviewed is None
+            or self._filter_reviewed == update.props.changes_reviewed
+        )
+
+        return search_matches and filter_matches
 
     @Gtk.Template.Callback()
     def clear_search(self, _object, _pspec):
