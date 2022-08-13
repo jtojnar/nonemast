@@ -134,7 +134,7 @@ class NonemastWindow(Adw.ApplicationWindow):
     # Mapping between updates’ commit subjects and their indices in updates_store.
     _updates_subject_indices = {}
 
-    updates_store = Gio.ListStore.new(PackageUpdate)
+    updates = GObject.Property(type=Gio.ListStore)
 
     details_stack = Gtk.Template.Child()
     update_details = Gtk.Template.Child()
@@ -146,7 +146,7 @@ class NonemastWindow(Adw.ApplicationWindow):
 
         self._repo_path = repo_path
 
-        self.updates_selection.set_model(self.updates_store)
+        self.props.updates = Gio.ListStore.new(PackageUpdate)
 
         action = Gio.SimpleAction.new("mark-as-reviewed", GLib.VariantType.new("s"))
         action.connect("activate", self.mark_as_reviewed)
@@ -180,7 +180,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         original_commit_subject = parameter.get_string()
 
         def editing_thread():
-            update = self.updates_store.get_item(
+            update = self.props.updates.get_item(
                 self._updates_subject_indices[original_commit_subject]
             )
             update.props.commit_message_is_edited = True
@@ -271,7 +271,7 @@ class NonemastWindow(Adw.ApplicationWindow):
             ).show()
 
         new_commit: Ggit.Commit = self._repo.lookup(new_commit_oid, Ggit.Commit)
-        update = self.updates_store.get_item(
+        update = self.props.updates.get_item(
             self._updates_subject_indices[target_subject]
         )
         update.add_commit(new_commit)
@@ -291,7 +291,7 @@ class NonemastWindow(Adw.ApplicationWindow):
                 subject=subject,
                 commits=commits,
             )
-            self.updates_store.append(update)
+            self.props.updates.append(update)
             index += 1
         self.updates_list_stack.set_visible_child_name("list")
         self.details_stack.set_visible_child_name("details")

@@ -84,6 +84,9 @@
 														</property>
 														<property name="model">
 															<object class="GtkSingleSelection" id="updates_selection">
+																<binding name="model">
+																	<lookup name="updates">NonemastWindow</lookup>
+																</binding>
 																<signal name="notify::selected-item" handler="on_selected_item_changed" />
 															</object>
 														</property>
