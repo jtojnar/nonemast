@@ -53,6 +53,24 @@ def open_commit_message_in_editor(parent: Gtk.Window, path: Path):
         subprocess.check_call(editor)
 
 
+def view_commit_in_vcs_tool(
+    parent: Gtk.Window,
+    commit_id: str,
+    repo_path: Gio.File,
+) -> None:
+    """Open commit details in a VCS management tool."""
+    viewer = None
+    if shutil.which("sublime_merge") is not None:
+        viewer = ["sublime_merge", "search", f"commit:{commit_id}"]
+
+    if viewer is None:
+        make_error_dialog(
+            parent, "Unable to find a tool for viewing Git commits."
+        ).show()
+    else:
+        subprocess.run(viewer, cwd=repo_path.get_path())
+
+
 def get_merge_base(
     repo: Ggit.Repository,
     oid_one: Ggit.OId,
@@ -140,6 +158,10 @@ class NonemastWindow(Adw.ApplicationWindow):
         action.connect("activate", self.edit_commit_message)
         self.add_action(action)
 
+        action = Gio.SimpleAction.new("view-commit", GLib.VariantType.new("s"))
+        action.connect("activate", self.view_commit)
+        self.add_action(action)
+
         thread = threading.Thread(
             target=self.load_commit_history,
             daemon=True,
@@ -199,6 +221,10 @@ class NonemastWindow(Adw.ApplicationWindow):
             target=editing_thread,
         )
         thread.start()
+
+    def view_commit(self, action, parameter) -> None:
+        commit_id = parameter.get_string()
+        view_commit_in_vcs_tool(self, commit_id, self._repo_path)
 
     def make_git_signature(self) -> Optional[Ggit.Signature]:
         try:

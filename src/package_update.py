@@ -48,9 +48,20 @@ class CommitInfo(GObject.Object):
 
     __gtype_name__ = "CommitInfo"
 
+    id_gvariant = GObject.Property(type=GObject.TYPE_VARIANT)
+
     def __init__(self, commit: Ggit.Commit, **kwargs):
         super().__init__(**kwargs)
         self._commit = commit
+
+        bind_property_full(
+            source=self,
+            source_property="id",
+            target=self,
+            target_property="id-gvariant",
+            flags=GObject.BindingFlags.SYNC_CREATE,
+            transform_to=lambda subject: GLib.Variant.new_string(subject),
+        )
 
     @GObject.Property(type=str)
     def id(self):

@@ -10,6 +10,21 @@
 						<lookup name="item">GtkListItem</lookup>
 					</lookup>
 				</binding>
+				<child>
+					<object class="GtkButton">
+						<property name="tooltip-text" translatable="yes">View in external tool</property>
+						<property name="icon-name">external-link-symbolic</property>
+						<property name="action-name">win.view-commit</property>
+						<binding name="action-target">
+							<lookup name="id_gvariant" type="CommitInfo">
+								<lookup name="item">GtkListItem</lookup>
+							</lookup>
+						</binding>
+						<style>
+							<class name="flat"/>
+						</style>
+					</object>
+				</child>
 			</object>
 		</property>
 	</template>
