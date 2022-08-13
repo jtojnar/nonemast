@@ -113,12 +113,13 @@ class UpdateDetails(Gtk.Box):
         self._update = update
         if self._binding is not None:
             self._binding.unbind()
-        self._binding = self._update.bind_property(
-            "changes-reviewed",
-            self,
-            "changes-not-reviewed",
-            GObject.BindingFlags.INVERT_BOOLEAN | GObject.BindingFlags.SYNC_CREATE,
-        )
+        if self._update is not None:
+            self._binding = self._update.bind_property(
+                "changes-reviewed",
+                self,
+                "changes-not-reviewed",
+                GObject.BindingFlags.INVERT_BOOLEAN | GObject.BindingFlags.SYNC_CREATE,
+            )
 
 
 @Gtk.Template(resource_path="/cz/ogion/Nonemast/window.ui")
@@ -129,12 +130,11 @@ class NonemastWindow(Adw.ApplicationWindow):
     updates_list_error = Gtk.Template.Child()
     updates_list_view = Gtk.Template.Child()
 
-    updates_selection = Gtk.Template.Child()
-
     # Mapping between updates’ commit subjects and their indices in updates_store.
     _updates_subject_indices = {}
 
     updates = GObject.Property(type=Gio.ListStore)
+    updates_search_filter = Gtk.Template.Child()
 
     details_stack = Gtk.Template.Child()
     update_details = Gtk.Template.Child()
@@ -145,6 +145,8 @@ class NonemastWindow(Adw.ApplicationWindow):
         super().__init__(**kwargs)
 
         self._repo_path = repo_path
+
+        self._search_query = None
 
         self.props.updates = Gio.ListStore.new(PackageUpdate)
 
@@ -165,6 +167,27 @@ class NonemastWindow(Adw.ApplicationWindow):
             daemon=True,
         )
         thread.start()
+
+    def filter_func(self, update: PackageUpdate):
+        if self._search_query is not None:
+            return self._search_query in update.props.subject
+
+        return True
+
+    @Gtk.Template.Callback()
+    def clear_search(self, _object, _pspec):
+        self._search_query = None
+        self.updates_search_filter.set_filter_func(self.filter_func)
+
+    @Gtk.Template.Callback()
+    def on_search_changed(self, entry):
+        text = entry.get_text().strip()
+        if text == "":
+            self._search_query = None
+        else:
+            self._search_query = text
+
+        self.updates_search_filter.set_filter_func(self.filter_func)
 
     def mark_as_reviewed(self, action, parameter) -> None:
         original_commit_subject = parameter.get_string()

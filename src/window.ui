@@ -21,6 +21,15 @@
 										<property name="title" translatable="yes">Not Nearly Enough Masking Tape</property>
 									</object>
 								</property>
+								<child>
+									<object class="GtkToggleButton">
+										<property name="active" bind-flags="bidirectional|sync-create" bind-property="search-mode-enabled" bind-source="search_bar"/>
+										<property name="focus-on-click">false</property>
+										<property name="icon-name">edit-find-symbolic</property>
+										<signal name="notify::search-mode-enabled" handler="clear_search" />
+										<property name="tooltip-text" translatable="yes">Search</property>
+									</object>
+								</child>
 								<child type="end">
 									<object class="GtkMenuButton">
 										<property name="icon-name">open-menu-symbolic</property>
@@ -70,26 +79,49 @@
 									<object class="GtkStackPage">
 										<property name="name">list</property>
 										<property name="child">
-											<object class="GtkScrolledWindow">
-												<property name="hexpand">false</property>
-												<property name="vexpand">true</property>
-												<property name="hscrollbar-policy">never</property>
+											<object class="GtkBox">
+												<property name="orientation">vertical</property>
 												<child>
-													<object class="GtkListView" id="updates_list_view">
-														<property name="show-separators">true</property>
-														<property name="factory">
-															<object class="GtkBuilderListItemFactory">
-																<property name="resource">/cz/ogion/Nonemast/update-item.ui</property>
+													<object class="GtkSearchBar" id="search_bar">
+														<property name="key-capture-widget">NonemastWindow</property>
+														<child>
+															<object class="GtkSearchEntry" id="search_entry">
+																<signal name="search-changed" handler="on_search_changed" />
+																<accessibility>
+																	<relation name="controls">updates_list_view</relation>
+																</accessibility>
 															</object>
-														</property>
-														<property name="model">
-															<object class="GtkSingleSelection" id="updates_selection">
-																<binding name="model">
-																	<lookup name="updates">NonemastWindow</lookup>
-																</binding>
-																<signal name="notify::selected-item" handler="on_selected_item_changed" />
+														</child>
+													</object>
+												</child>
+												<child>
+													<object class="GtkScrolledWindow">
+														<property name="hexpand">false</property>
+														<property name="vexpand">true</property>
+														<property name="hscrollbar-policy">never</property>
+														<child>
+															<object class="GtkListView" id="updates_list_view">
+																<property name="show-separators">true</property>
+																<property name="factory">
+																	<object class="GtkBuilderListItemFactory">
+																		<property name="resource">/cz/ogion/Nonemast/update-item.ui</property>
+																	</object>
+																</property>
+																<property name="model">
+																	<object class="GtkSingleSelection">
+																		<signal name="notify::selected-item" handler="on_selected_item_changed" />
+																		<property name="model">
+																			<object class="GtkFilterListModel" id="updates_filter_model">
+																				<property name="filter">updates_search_filter</property>
+																				<binding name="model">
+																					<lookup name="updates">NonemastWindow</lookup>
+																				</binding>
+																			</object>
+																		</property>
+																	</object>
+																</property>
 															</object>
-														</property>
+														</child>
 													</object>
 												</child>
 											</object>
@@ -183,4 +215,5 @@
 			</item>
 		</section>
 	</menu>
+	<object class="GtkCustomFilter" id="updates_search_filter"/>
 </interface>
