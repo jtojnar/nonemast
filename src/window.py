@@ -53,6 +53,9 @@ def open_commit_message_in_editor(parent: Gtk.Window, path: Path):
         subprocess.check_call(editor)
 
 
+NIXPKGS_REMOTE_URL = "git@github.com:NixOS/nixpkgs.git"
+
+
 def view_commit_in_vcs_tool(
     parent: Gtk.Window,
     commit_id: str,
@@ -69,6 +72,15 @@ def view_commit_in_vcs_tool(
         ).show()
     else:
         subprocess.run(viewer, cwd=repo_path.get_path())
+
+
+def find_nixpkgs_remote_name(repo: Ggit.Repository) -> Optional[str]:
+    for remote_name in repo.list_remotes():
+        remote = repo.lookup_remote(remote_name)
+        if remote is not None:
+            if remote.get_url() == NIXPKGS_REMOTE_URL:
+                return remote_name
+    return None
 
 
 def get_merge_base(
@@ -359,16 +371,33 @@ class NonemastWindow(Adw.ApplicationWindow):
             mailmap: Ggit.Mailmap = Ggit.Mailmap.new_from_repository(self._repo)
             head = self._repo.get_head()
 
+            # Find the remote corresponding to upstream Nixpkgs
+            nixpkgs_remote_name = find_nixpkgs_remote_name(self._repo)
+            if nixpkgs_remote_name is None:
+                error = GLib.Error(
+                    f"Could not find a Git remote with URL “{NIXPKGS_REMOTE_URL}”.",
+                    "nonemast",
+                    1,
+                )
+                GLib.idle_add(self.show_error, error)
+                return
+
             # Determine merge bases between the current branch and master and staging branches.
             merge_base_staging = get_merge_base(
                 self._repo,
                 head.get_target(),
-                self._repo.lookup_branch("staging", Ggit.BranchType.LOCAL).get_target(),
+                self._repo.lookup_branch(
+                    f"{nixpkgs_remote_name}/staging",
+                    Ggit.BranchType.REMOTE,
+                ).get_target(),
             )
             merge_base_master = get_merge_base(
                 self._repo,
                 head.get_target(),
-                self._repo.lookup_branch("master", Ggit.BranchType.LOCAL).get_target(),
+                self._repo.lookup_branch(
+                    f"{nixpkgs_remote_name}/master",
+                    Ggit.BranchType.REMOTE,
+                ).get_target(),
             )
 
             # Traverse the commit list until one of the merge bases or a limit is reached.
