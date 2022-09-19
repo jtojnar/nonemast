@@ -16,6 +16,20 @@ def has_changelog_reviewed_tag(line: str) -> bool:
     return re.match(r"^Changelog-Reviewed-By: ", line)
 
 
+def try_getting_corresponding_github_link(url: str) -> str:
+    if url.startswith("https://gitlab.gnome.org/GNOME/console/"):
+        # The GitHub repo is empty.
+        return url
+
+    url = url.replace(
+        "https://gitlab.gnome.org/GNOME/",
+        "https://github.com/GNOME/",
+    )
+    url = url.replace("/-/", "/")
+
+    return url
+
+
 def find_changelog_link(lines: List[str]) -> Optional[str]:
     # Heuristics: First line starting with a URL is likely a changelog.
     for line in lines:
@@ -139,11 +153,13 @@ class PackageUpdate(GObject.Object):
             has_changelog_reviewed_tag(line) for line in self._message_lines
         )
         url = find_changelog_link(self._message_lines)
-        self.props.changelog_link = (
-            f"<a href='{html.escape(url)}'>{html.escape(url)}</a>"
-            if url is not None
-            else "No changelog detected."
-        )
+        if url is None:
+            self.props.changelog_link = "No changelog detected."
+        else:
+            url = try_getting_corresponding_github_link(url)
+            self.props.changelog_link = (
+                f"<a href='{html.escape(url)}'>{html.escape(url)}</a>"
+            )
 
     @GObject.Property(type=str)
     def subject(self):
