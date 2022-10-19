@@ -67,17 +67,7 @@
           buildInputs = with final; [
             gtk4
             libgit2-glib
-            (libadwaita.overrideAttrs (attrs: rec {
-              version = "1.2.alpha";
-
-              src = fetchFromGitLab {
-                domain = "gitlab.gnome.org";
-                owner = "GNOME";
-                repo = "libadwaita";
-                rev = version;
-                hash = "sha256-JMxUeIOUPp9k5pImQqWLVkQ2GHaKvopvg6ol9pvA+Bk=";
-              };
-            }))
+            libadwaita
           ];
 
           propagatedBuildInputs = with final.python3.pkgs; [
