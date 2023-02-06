@@ -40,6 +40,8 @@ def open_commit_message_in_editor(parent: Gtk.Window, path: Path):
         editor = ["subl", "--wait", path]
     elif shutil.which("gedit") is not None:
         editor = ["gedit", "--wait", path]
+    elif shutil.which("gnome-text-editor") is not None:
+        editor = ["gnome-text-editor", "--standalone", path]
 
     if editor is None:
 
