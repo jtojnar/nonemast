@@ -121,7 +121,7 @@ class UpdateDetails(Gtk.Box):
         return self._update
 
     @update.setter
-    def update(self, update: Optional[PackageUpdate]) -> None:
+    def update(self, update: Optional[PackageUpdate]) -> None:  # type: ignore[no-redef]
         self._update = update
         if self._binding is not None:
             self._binding.unbind()

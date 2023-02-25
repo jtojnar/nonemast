@@ -182,7 +182,7 @@ class PackageUpdate(GObject.Object):
         return "\n".join(self._message_lines)
 
     @final_commit_message.setter
-    def final_commit_message(self, message):
+    def final_commit_message(self, message):  # type: ignore[no-redef]
         self._message_lines = message.splitlines()
 
     @GObject.Property(type=str)
@@ -190,7 +190,7 @@ class PackageUpdate(GObject.Object):
         return self._changelog_link
 
     @changelog_link.setter
-    def changelog_link(self, changelog_link: str) -> None:
+    def changelog_link(self, changelog_link: str) -> None:  # type: ignore[no-redef]
         self._changelog_link = changelog_link
 
     @GObject.Property(type=bool, default=False)
@@ -198,7 +198,7 @@ class PackageUpdate(GObject.Object):
         return self._changes_reviewed
 
     @changes_reviewed.setter
-    def changes_reviewed(self, changes_reviewed):
+    def changes_reviewed(self, changes_reviewed):  # type: ignore[no-redef]
         self._changes_reviewed = changes_reviewed
 
     @GObject.Property(type=Gio.ListStore)
