@@ -9,6 +9,7 @@ from linkify_it import LinkifyIt
 from typing import Optional
 import html
 import re
+from .helpers import unwrap
 
 
 def has_changelog_reviewed_tag(line: str) -> bool:
@@ -127,7 +128,7 @@ class PackageUpdate(GObject.Object):
     def add_commit(self, commit: Ggit.Commit) -> None:
         self._commits.append(CommitInfo(commit=commit))
 
-        subject, *msg_lines = commit.get_message().splitlines()
+        subject, *msg_lines = unwrap(commit.get_message()).splitlines()
         # Clone list so we can detect changes.
         old_message_lines = list(self._message_lines)
         if subject.startswith("fixup! "):
