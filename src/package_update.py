@@ -6,14 +6,14 @@ from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
 from linkify_it import LinkifyIt
-from typing import List, Optional
+from typing import Optional
 import html
 import re
 from .bind_property_full import bind_property_full
 
 
 def has_changelog_reviewed_tag(line: str) -> bool:
-    return re.match(r"^Changelog-Reviewed-By: ", line)
+    return re.match(r"^Changelog-Reviewed-By: ", line) is not None
 
 
 def try_getting_corresponding_github_link(url: str) -> str:
@@ -30,7 +30,7 @@ def try_getting_corresponding_github_link(url: str) -> str:
     return url
 
 
-def find_changelog_link(lines: List[str]) -> Optional[str]:
+def find_changelog_link(lines: list[str]) -> Optional[str]:
     # Heuristics: First line starting with a URL is likely a changelog.
     for line in lines:
         line = line.strip()
@@ -90,11 +90,11 @@ class PackageUpdate(GObject.Object):
     editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
 
-    def __init__(self, subject: str, commits: List[Ggit.Commit], **kwargs):
+    def __init__(self, subject: str, commits: list[Ggit.Commit], **kwargs):
         super().__init__(**kwargs)
         self._subject = subject
         self._commits = Gio.ListStore.new(CommitInfo)
-        self._message_lines = []
+        self._message_lines: list[str] = []
 
         bind_property_full(
             source=self,

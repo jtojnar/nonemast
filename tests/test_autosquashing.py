@@ -6,7 +6,6 @@ import gi
 gi.require_version("Ggit", "1.0")
 
 from gi.repository import Ggit
-from typing import List
 import pytest
 import subprocess
 import tempfile
@@ -20,9 +19,11 @@ except:
 
 
 class FakeCommit(Ggit.Commit):
-    """docstring for FakeCommit"""
+    """Simulated commit holding a commit message."""
 
-    def __init__(self, message):
+    _message: str
+
+    def __init__(self, message: str):
         self._message = message
 
     def get_id(self) -> Ggit.OId:
@@ -32,7 +33,7 @@ class FakeCommit(Ggit.Commit):
         return self._message
 
 
-def autosquash_commits_with_git(commit_messages: List[str]) -> List[str]:
+def autosquash_commits_with_git(commit_messages: list[str]) -> list[str]:
     """Initializes a Git repository, fills it with a sequence of commits, autosquashes them, and then returns the new sequence of commit messages."""
     with tempfile.TemporaryDirectory() as repo_path:
 
@@ -62,7 +63,7 @@ def autosquash_commits_with_git(commit_messages: List[str]) -> List[str]:
         return [git("log", "--format=%B", "-n", "1", commit) for commit in commits]
 
 
-def check_autosquashing(commit_messages: List[str]) -> None:
+def check_autosquashing(commit_messages: list[str]) -> None:
     commits = [
         FakeCommit(
             message=message,
@@ -80,7 +81,7 @@ def check_autosquashing(commit_messages: List[str]) -> None:
     assert [update.props.final_commit_message] == expected
 
 
-def test_autosquashing_fixup():
+def test_autosquashing_fixup() -> None:
     check_autosquashing(
         [
             "Hello",
@@ -89,7 +90,7 @@ def test_autosquashing_fixup():
     )
 
 
-def test_autosquashing_fixup_with_body():
+def test_autosquashing_fixup_with_body() -> None:
     check_autosquashing(
         [
             "Hello",
@@ -98,7 +99,7 @@ def test_autosquashing_fixup_with_body():
     )
 
 
-def test_autosquashing_squash():
+def test_autosquashing_squash() -> None:
     check_autosquashing(
         [
             "Hello",
@@ -107,7 +108,7 @@ def test_autosquashing_squash():
     )
 
 
-def test_autosquashing_double_squash():
+def test_autosquashing_double_squash() -> None:
     check_autosquashing(
         [
             "Hello",
@@ -120,7 +121,7 @@ def test_autosquashing_double_squash():
 # There is a bug in git where if a squash commit is followed by an amend commit,
 # the latter will be treated as a squash commit.
 @pytest.mark.xfail
-def test_autosquashing_amend_after_squash():
+def test_autosquashing_amend_after_squash() -> None:
     check_autosquashing(
         [
             "Hello",

@@ -9,7 +9,7 @@ from gi.repository import GObject
 from gi.repository import Gtk
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Optional
+from typing import Literal, Optional
 import re
 import shutil
 import subprocess
@@ -18,7 +18,10 @@ import threading
 from .package_update import PackageUpdate
 
 
-def make_error_dialog(parent, text, **kwargs):
+SourceFuncResult = Literal[GLib.SOURCE_CONTINUE, GLib.SOURCE_REMOVE]
+
+
+def make_error_dialog(parent: Gtk.Window, text: str, **kwargs) -> Gtk.MessageDialog:
     dialog = Gtk.MessageDialog(
         text=text,
         message_type=Gtk.MessageType.ERROR,
@@ -31,7 +34,7 @@ def make_error_dialog(parent, text, **kwargs):
     return dialog
 
 
-def open_commit_message_in_editor(parent: Gtk.Window, path: Path):
+def open_commit_message_in_editor(parent: Gtk.Window, path: Path) -> None:
     """Open path in a text editor and wait for it to quit."""
     editor = None
     if shutil.which("re.sonny.Commit") is not None:
@@ -110,9 +113,9 @@ def signature_to_string(signature: Ggit.Signature) -> str:
 class UpdateDetails(Gtk.Box):
     __gtype_name__ = "UpdateDetails"
 
-    _update = None
+    _update: Optional[PackageUpdate] = None
 
-    _binding = None
+    _binding: Optional[GObject.Binding] = None
     changes_not_reviewed = GObject.Property(type=bool, default=False)
 
     def __init__(self, **kwargs):
@@ -145,7 +148,7 @@ class NonemastWindow(Adw.ApplicationWindow):
     updates_list_view = Gtk.Template.Child()
 
     # Mapping between updates’ commit subjects and their indices in updates_store.
-    _updates_subject_indices = {}
+    _updates_subject_indices: dict[str, int] = {}
 
     updates = GObject.Property(type=Gio.ListStore)
     updates_search_filter = Gtk.Template.Child()
@@ -345,7 +348,10 @@ class NonemastWindow(Adw.ApplicationWindow):
     def do_select_update(self, update: PackageUpdate):
         self.update_details.props.update = update
 
-    def populate_updates(self, updates: OrderedDict[str, List[Ggit.Commit]]):
+    def populate_updates(
+        self,
+        updates: OrderedDict[str, list[Ggit.Commit]],
+    ) -> SourceFuncResult:
         index = 0
         for subject, commits in updates.items():
             self._updates_subject_indices[subject] = index
@@ -360,14 +366,14 @@ class NonemastWindow(Adw.ApplicationWindow):
 
         return GLib.SOURCE_REMOVE
 
-    def show_error(self, error: GLib.Error):
+    def show_error(self, error: GLib.Error) -> SourceFuncResult:
         self.updates_list_stack.set_visible_child_name("error")
         self.updates_list_error.set_description(error.message)
 
         return GLib.SOURCE_REMOVE
 
-    def load_commit_history(self):
-        updates = OrderedDict()
+    def load_commit_history(self) -> None:
+        updates: OrderedDict[str, list[Ggit.Commit]] = OrderedDict()
         try:
             self._repo = Ggit.Repository.open(self._repo_path)
             mailmap: Ggit.Mailmap = Ggit.Mailmap.new_from_repository(self._repo)
