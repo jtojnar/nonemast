@@ -5,6 +5,7 @@ from gi.repository import Ggit
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
+from .helpers import unwrap
 from .message_utils import (
     has_changelog_reviewed_tag,
     find_changelog_link,
@@ -141,7 +142,7 @@ class PackageUpdate(GObject.Object):
     def add_commit(self, commit: Ggit.Commit) -> None:
         self._commits.append(CommitInfo(repo=self._repo, commit=commit))
 
-        subject, *msg_lines = commit.get_message().splitlines()
+        subject, *msg_lines = unwrap(commit.get_message()).splitlines()
         # Clone list so we can detect changes.
         old_message_lines = list(self._message_lines)
         if subject.startswith("fixup! "):
