@@ -28,9 +28,15 @@ configure_file(
 nonemast_sources = [
   '__init__.py',
   'bind_property_full.py',
+  'git_utils.py',
   'main.py',
+  'operations/ensure_coauthors.py',
   'package_update.py',
   'window.py',
 ]
 
-install_data(nonemast_sources, install_dir: moduledir)
+install_data(
+  nonemast_sources,
+  install_dir: moduledir,
+  preserve_path: true,
+)

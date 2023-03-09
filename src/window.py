@@ -15,6 +15,8 @@ import shutil
 import subprocess
 import tempfile
 import threading
+from .git_utils import signature_to_string
+from .operations.ensure_coauthors import get_missing_coauthors
 from .package_update import PackageUpdate
 
 
@@ -105,10 +107,6 @@ def get_base_commit_subject(subject: str) -> str:
     return re.sub(r"^(fixup! |squash! |amend! )+", "", subject)
 
 
-def signature_to_string(signature: Ggit.Signature) -> str:
-    return f"{signature.get_name()} <{signature.get_email()}>"
-
-
 @Gtk.Template(resource_path="/cz/ogion/Nonemast/update-details.ui")
 class UpdateDetails(Gtk.Box):
     __gtype_name__ = "UpdateDetails"
@@ -167,6 +165,10 @@ class NonemastWindow(Adw.ApplicationWindow):
         self._filter_reviewed = None
 
         self.props.updates = Gio.ListStore.new(PackageUpdate)
+
+        action = Gio.SimpleAction.new("ensure-coauthors")
+        action.connect("activate", self.ensure_coauthors)
+        self.add_action(action)
 
         action = Gio.SimpleAction.new("mark-as-reviewed", GLib.VariantType.new("s"))
         action.connect("activate", self.mark_as_reviewed)
@@ -230,6 +232,18 @@ class NonemastWindow(Adw.ApplicationWindow):
             self._search_query = text
 
         self.updates_search_filter.set_filter_func(self.filter_func)
+
+    def ensure_coauthors(self, action, parameter: None) -> None:
+        signature = self.make_git_signature()
+        for commit, authors in get_missing_coauthors(self.props.updates):
+            original_commit_subject = get_base_commit_subject(commit.get_subject())
+            trailers = "\n".join(f"Co-authored-by: {author}" for author in authors)
+            commit_message = f"squash! {original_commit_subject}\n\n" + trailers
+            self.create_empty_commit(
+                target_subject=original_commit_subject,
+                message=commit_message,
+                author=signature,
+            )
 
     def mark_as_reviewed(self, action, parameter) -> None:
         original_commit_subject = parameter.get_string()

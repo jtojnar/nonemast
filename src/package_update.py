@@ -81,6 +81,9 @@ class CommitInfo(GObject.Object):
     def id(self):
         return self._commit.get_id().to_string()
 
+    def get_commit(self) -> Ggit.Commit:
+        return self._commit
+
 
 class PackageUpdate(GObject.Object):
     __gtype_name__ = "PackageUpdate"
