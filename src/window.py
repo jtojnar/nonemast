@@ -9,7 +9,7 @@ from gi.repository import GObject
 from gi.repository import Gtk
 from collections import OrderedDict
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 import re
 import shutil
 import subprocess
@@ -120,11 +120,11 @@ class UpdateDetails(Gtk.Box):
         super().__init__(**kwargs)
 
     @GObject.Property(type=PackageUpdate)
-    def update(self):
+    def update(self) -> Optional[PackageUpdate]:
         return self._update
 
     @update.setter
-    def update(self, update):
+    def update(self, update: Optional[PackageUpdate]) -> None:
         self._update = update
         if self._binding is not None:
             self._binding.unbind()
@@ -196,7 +196,11 @@ class NonemastWindow(Adw.ApplicationWindow):
         )
         thread.start()
 
-    def on_toggle_filter(self, action, variant):
+    def on_toggle_filter(
+        self,
+        action: Gio.SimpleAction,
+        variant: GLib.Variant,
+    ) -> None:
         match variant.get_string():
             case "reviewed":
                 self._filter_reviewed = True
@@ -207,7 +211,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         action.set_state(variant)
         self.updates_search_filter.set_filter_func(self.filter_func)
 
-    def filter_func(self, update: PackageUpdate):
+    def filter_func(self, update: PackageUpdate) -> bool:
         search_matches = (
             self._search_query is None or self._search_query in update.props.subject
         )
@@ -219,7 +223,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         return search_matches and filter_matches
 
     @Gtk.Template.Callback()
-    def on_search_changed(self, entry):
+    def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
         text = entry.get_text().strip()
         if text == "":
             self._search_query = None
@@ -228,7 +232,11 @@ class NonemastWindow(Adw.ApplicationWindow):
 
         self.updates_search_filter.set_filter_func(self.filter_func)
 
-    def ensure_coauthors(self, action, parameter: None) -> None:
+    def ensure_coauthors(
+        self,
+        action: Gio.SimpleAction,
+        parameter: None,
+    ) -> None:
         signature = self.make_git_signature()
         for commit, authors in get_missing_coauthors(self.props.updates):
             original_commit_subject = get_base_commit_subject(commit.get_subject())
@@ -240,7 +248,11 @@ class NonemastWindow(Adw.ApplicationWindow):
                 author=signature,
             )
 
-    def mark_as_reviewed(self, action, parameter) -> None:
+    def mark_as_reviewed(
+        self,
+        action: Gio.SimpleAction,
+        parameter: GLib.Variant,
+    ) -> None:
         original_commit_subject = parameter.get_string()
         signature = self.make_git_signature()
         commit_message = f"squash! {original_commit_subject}\n\nChangelog-Reviewed-By: {signature_to_string(signature)}"
@@ -250,7 +262,11 @@ class NonemastWindow(Adw.ApplicationWindow):
             author=signature,
         )
 
-    def edit_commit_message(self, action, parameter) -> None:
+    def edit_commit_message(
+        self,
+        action: Gio.SimpleAction,
+        parameter: GLib.Variant,
+    ) -> None:
         original_commit_subject = parameter.get_string()
 
         def editing_thread():
@@ -294,7 +310,11 @@ class NonemastWindow(Adw.ApplicationWindow):
         )
         thread.start()
 
-    def view_commit(self, action, parameter) -> None:
+    def view_commit(
+        self,
+        action: Gio.SimpleAction,
+        parameter: GLib.Variant,
+    ) -> None:
         commit_id = parameter.get_string()
         view_commit_in_vcs_tool(self, commit_id, self._repo_path)
 
@@ -351,10 +371,14 @@ class NonemastWindow(Adw.ApplicationWindow):
         update.add_commit(new_commit)
 
     @Gtk.Template.Callback()
-    def on_selected_item_changed(self, selection, prop_name):
+    def on_selected_item_changed(
+        self,
+        selection: Gtk.SingleSelection,
+        _prop_name: Any,
+    ) -> None:
         self.do_select_update(selection.get_selected_item())
 
-    def do_select_update(self, update: PackageUpdate):
+    def do_select_update(self, update: PackageUpdate) -> None:
         self.update_details.props.update = update
 
     def populate_updates(

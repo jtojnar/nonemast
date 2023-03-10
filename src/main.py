@@ -9,12 +9,13 @@ from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import Gtk
 from .window import NonemastWindow
+from typing import Callable, Optional, Sequence, TypeVar
 
 
 class NonemastApplication(Adw.Application):
     """The main application singleton class."""
 
-    def __init__(self, version):
+    def __init__(self, version: str):
         super().__init__(
             application_id="cz.ogion.Nonemast",
             flags=Gio.ApplicationFlags.HANDLES_OPEN,
@@ -24,7 +25,7 @@ class NonemastApplication(Adw.Application):
         self.create_action("quit", self.on_quit_action, ["<primary>q"])
         self.create_action("about", self.on_about_action)
 
-    def do_activate(self, repo_path=None):
+    def do_activate(self, repo_path: Optional[Gio.File] = None) -> None:
         win = self.props.active_window
         if not win:
             if repo_path is None:
@@ -32,16 +33,24 @@ class NonemastApplication(Adw.Application):
             win = NonemastWindow(application=self, repo_path=repo_path)
         win.present()
 
-    def do_open(self, files, n_files, hint):
+    def do_open(self, files: Sequence[Gio.File], n_files: int, hint: str) -> None:
         if n_files != 1:
             sys.exit("error: nonemast expects exactly one path as an argument.")
 
         self.do_activate(repo_path=files[0])
 
-    def on_quit_action(self, widget, _):
+    def on_quit_action(
+        self,
+        action: Gio.SimpleAction,
+        _parameter: None,
+    ) -> None:
         self.quit()
 
-    def on_about_action(self, widget, _):
+    def on_about_action(
+        self,
+        action: Gio.SimpleAction,
+        _parameter: None,
+    ) -> None:
         """Callback for the app.about action."""
         about = Adw.AboutWindow(
             transient_for=self.props.active_window,
@@ -54,7 +63,14 @@ class NonemastApplication(Adw.Application):
         )
         about.present()
 
-    def create_action(self, name, callback, shortcuts=None):
+    T = TypeVar("T", bound=GLib.Variant | None)
+
+    def create_action(
+        self,
+        name: str,
+        callback: Callable[[Gio.SimpleAction, T], None],
+        shortcuts: list[str] = [],
+    ) -> None:
         """Add an application action.
 
         Args:
@@ -70,7 +86,7 @@ class NonemastApplication(Adw.Application):
             self.set_accels_for_action(f"app.{name}", shortcuts)
 
 
-def main(version):
+def main(version: str) -> int:
     """The application's entry point."""
     app = NonemastApplication(
         version=version,
