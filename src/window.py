@@ -149,7 +149,7 @@ class NonemastWindow(Adw.ApplicationWindow):
     # Mapping between updates’ commit subjects and their indices in updates_store.
     _updates_subject_indices: dict[str, int] = {}
 
-    updates = GObject.Property(type=Gio.ListStore)
+    updates = GObject.Property(type=Gio.ListStore[PackageUpdate])
     updates_search_filter = Gtk.Template.Child()
 
     details_stack = Gtk.Template.Child()

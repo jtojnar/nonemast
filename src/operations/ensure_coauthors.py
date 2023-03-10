@@ -19,8 +19,7 @@ def get_coauthors(commit_message: str) -> list[str]:
 
 
 def get_missing_coauthors(
-    # Should be Gio.ListStore[PackageUpdate] but pygobject does not implement Generic.
-    updates: Gio.ListStore,
+    updates: Gio.ListStore[PackageUpdate],
 ) -> Generator[tuple[Ggit.Commit, set[str]], None, None]:
     for update in updates:
         authors: set[str] = set()

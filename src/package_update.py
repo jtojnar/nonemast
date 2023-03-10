@@ -92,6 +92,8 @@ class PackageUpdate(GObject.Object):
     editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
 
+    _commits: Gio.ListStore[CommitInfo]
+
     def __init__(self, subject: str, commits: list[Ggit.Commit], **kwargs):
         super().__init__(**kwargs)
         self._subject = subject
@@ -188,6 +190,6 @@ class PackageUpdate(GObject.Object):
     def changes_reviewed(self, changes_reviewed):  # type: ignore[no-redef]
         self._changes_reviewed = changes_reviewed
 
-    @GObject.Property(type=Gio.ListStore)
+    @GObject.Property(type=Gio.ListStore[CommitInfo])
     def commits(self):
         return self._commits

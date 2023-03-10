@@ -11,5 +11,5 @@ class UpdateDetails(Gtk.Box):
 
 class NonemastWindow(Adw.ApplicationWindow):
     class Props(Adw.ApplicationWindow.Props):
-        updates: Gio.ListStore
+        updates: Gio.ListStore[PackageUpdate]
     props: Props = ...
