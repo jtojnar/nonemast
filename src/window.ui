@@ -26,7 +26,6 @@
 										<property name="active" bind-flags="bidirectional|sync-create" bind-property="search-mode-enabled" bind-source="search_bar"/>
 										<property name="focus-on-click">false</property>
 										<property name="icon-name">edit-find-symbolic</property>
-										<signal name="notify::search-mode-enabled" handler="clear_search" />
 										<property name="tooltip-text" translatable="yes">Search</property>
 									</object>
 								</child>

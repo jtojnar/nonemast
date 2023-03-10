@@ -219,11 +219,6 @@ class NonemastWindow(Adw.ApplicationWindow):
         return search_matches and filter_matches
 
     @Gtk.Template.Callback()
-    def clear_search(self, _object, _pspec):
-        self._search_query = None
-        self.updates_search_filter.set_filter_func(self.filter_func)
-
-    @Gtk.Template.Callback()
     def on_search_changed(self, entry):
         text = entry.get_text().strip()
         if text == "":
