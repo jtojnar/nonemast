@@ -18,5 +18,5 @@ class PackageUpdate(GObject.Object):
         final_commit_message: str
         changelog_link: str
         changes_reviewed: bool
-        commits: Gio.ListStore
+        commits: Gio.ListStore[CommitInfo]
     props: Props = ...
