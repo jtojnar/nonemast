@@ -325,7 +325,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         author: Ggit.Signature,
     ) -> None:
         head: Ggit.OId = self._repo.get_head().get_target()
-        current_commit: Ggit.Commit = self._repo.lookup(head, Ggit.Commit)
+        current_commit: Ggit.Commit = self._repo.lookup_commit(head)
         try:
             # Create an empty squash commit adding Changelog-Reviewed-By tag to the commit message.
             new_commit_oid: Ggit.OId = self._repo.create_commit(
@@ -344,7 +344,7 @@ class NonemastWindow(Adw.ApplicationWindow):
                 secondary_text=error.message,
             ).show()
 
-        new_commit: Ggit.Commit = self._repo.lookup(new_commit_oid, Ggit.Commit)
+        new_commit: Ggit.Commit = self._repo.lookup_commit(new_commit_oid)
         update = self.props.updates.get_item(
             self._updates_subject_indices[target_subject]
         )
@@ -431,7 +431,7 @@ class NonemastWindow(Adw.ApplicationWindow):
             revwalker.push(oid)
 
             while (oid := revwalker.next()) is not None:
-                commit: Ggit.Commit = self._repo.lookup(oid, Ggit.Commit)
+                commit: Ggit.Commit = self._repo.lookup_commit(oid)
                 base_commit_subject = get_base_commit_subject(commit.get_subject())
 
                 # Add commit to the group.
