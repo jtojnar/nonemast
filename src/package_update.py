@@ -9,7 +9,6 @@ from linkify_it import LinkifyIt
 from typing import Optional
 import html
 import re
-from .bind_property_full import bind_property_full
 
 
 def has_changelog_reviewed_tag(line: str) -> bool:
@@ -68,13 +67,12 @@ class CommitInfo(GObject.Object):
         super().__init__(**kwargs)
         self._commit = commit
 
-        bind_property_full(
-            source=self,
-            source_property="id",
-            target=self,
-            target_property="id-gvariant",
-            flags=GObject.BindingFlags.SYNC_CREATE,
-            transform_to=lambda subject: GLib.Variant.new_string(subject),
+        self.bind_property(
+            "id",
+            self,
+            "id-gvariant",
+            GObject.BindingFlags.SYNC_CREATE,
+            lambda _binding, subject: GLib.Variant.new_string(subject),
         )
 
     @GObject.Property(type=str)
@@ -99,34 +97,31 @@ class PackageUpdate(GObject.Object):
         self._commits = Gio.ListStore.new(CommitInfo)
         self._message_lines: list[str] = []
 
-        bind_property_full(
-            source=self,
-            source_property="subject",
-            target=self,
-            target_property="subject-gvariant",
-            flags=GObject.BindingFlags.SYNC_CREATE,
-            transform_to=lambda subject: GLib.Variant.new_string(subject),
+        self.bind_property(
+            "subject",
+            self,
+            "subject-gvariant",
+            GObject.BindingFlags.SYNC_CREATE,
+            lambda _binding, subject: GLib.Variant.new_string(subject),
         )
 
         for commit in commits:
             self.add_commit(commit)
 
-        bind_property_full(
-            source=self,
-            source_property="final-commit-message",
-            target=self,
-            target_property="final-commit-message-rich",
-            flags=GObject.BindingFlags.SYNC_CREATE,
-            transform_to=lambda message: linkify_html(message),
+        self.bind_property(
+            "final-commit-message",
+            self,
+            "final-commit-message-rich",
+            GObject.BindingFlags.SYNC_CREATE,
+            lambda _binding, message: linkify_html(message),
         )
 
-        bind_property_full(
-            source=self,
-            source_property="commit-message-is-edited",
-            target=self,
-            target_property="editing-stack-page",
-            flags=GObject.BindingFlags.SYNC_CREATE,
-            transform_to=lambda editing: "editing" if editing else "not-editing",
+        self.bind_property(
+            "commit-message-is-edited",
+            self,
+            "editing-stack-page",
+            GObject.BindingFlags.SYNC_CREATE,
+            lambda _binding, editing: "editing" if editing else "not-editing",
         )
 
     def add_commit(self, commit: Ggit.Commit) -> None:
