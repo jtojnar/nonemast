@@ -23,7 +23,6 @@ class NonemastApplication(Adw.Application):
         self.version = version
         self.create_action("quit", self.on_quit_action, ["<primary>q"])
         self.create_action("about", self.on_about_action)
-        self.create_action("preferences", self.on_preferences_action)
 
     def do_activate(self, repo_path=None):
         win = self.props.active_window
@@ -54,10 +53,6 @@ class NonemastApplication(Adw.Application):
             copyright="© 2022 Jan Tojnar",
         )
         about.present()
-
-    def on_preferences_action(self, widget, _):
-        """Callback for the app.preferences action."""
-        print("app.preferences action activated")
 
     def create_action(self, name, callback, shortcuts=None):
         """Add an application action.
