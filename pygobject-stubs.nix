@@ -21,10 +21,11 @@ buildPythonPackage rec {
 
   format = "pyproject";
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-GgXQD6/mGtMh42u6ohgEEEsidsvPuRI1TJz+BPDC6u4=";
-  };
+  # src = fetchPypi {
+  #   inherit pname version;
+  #   hash = "sha256-GgXQD6/mGtMh42u6ohgEEEsidsvPuRI1TJz+BPDC6u4=";
+  # };
+  src = /home/jtojnar/Projects/pygobject-stubs;
 
   nativeBuildInputs = [
     setuptools

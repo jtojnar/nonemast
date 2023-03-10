@@ -87,7 +87,9 @@
           ];
 
           propagatedBuildInputs = with final.python3.pkgs; [
-            pygobject3
+            (pygobject3.overrideAttrs (attrs: {
+              src = /home/jtojnar/Projects/pygobject;
+            }))
             linkify-it-py
           ];
 
