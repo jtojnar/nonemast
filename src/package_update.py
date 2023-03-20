@@ -16,10 +16,6 @@ def has_changelog_reviewed_tag(line: str) -> bool:
 
 
 def try_getting_corresponding_github_link(url: str) -> str:
-    if url.startswith("https://gitlab.gnome.org/GNOME/console/"):
-        # The GitHub repo is empty.
-        return url
-
     url = url.replace(
         "https://gitlab.gnome.org/GNOME/",
         "https://github.com/GNOME/",
