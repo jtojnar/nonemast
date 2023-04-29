@@ -28,6 +28,7 @@ configure_file(
 nonemast_sources = [
   '__init__.py',
   'git_utils.py',
+  'helpers.py',
   'main.py',
   'operations/ensure_coauthors.py',
   'package_update.py',

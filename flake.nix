@@ -26,6 +26,8 @@
           default = pkgs.mkShell {
             nativeBuildInputs = pkgs.nonemast.nativeBuildInputs ++ (with pkgs; [
               python3.pkgs.black
+              python3.pkgs.mypy
+              python3.pkgs.pygobject-stubs
             ]);
 
             inherit (pkgs.nonemast) buildInputs propagatedBuildInputs checkInputs;
@@ -34,6 +36,7 @@
 
         packages = rec {
           nonemast = pkgs.nonemast;
+          python3 = pkgs.python3;
           default = nonemast;
         };
 
@@ -45,6 +48,19 @@
       }
   ) // {
     overlay = final: prev: {
+      python3 = prev.python3.override (prevArgs: {
+        packageOverrides =
+          let
+            emptyOverlay = final: prev: {};
+            ourOverlay = ppFinal: ppPrev: {
+              pygobject-stubs = ppFinal.callPackage ./pygobject-stubs.nix {};
+            };
+          in
+          prev.lib.composeExtensions
+            prevArgs.packageOverrides or emptyOverlay
+            ourOverlay;
+      });
+
       nonemast =
         final.python3.pkgs.buildPythonApplication rec {
           pname = "nonemast";
@@ -71,7 +87,9 @@
           ];
 
           propagatedBuildInputs = with final.python3.pkgs; [
-            pygobject3
+            (pygobject3.overrideAttrs (attrs: {
+              src = /home/jtojnar/Projects/pygobject;
+            }))
             linkify-it-py
           ];
 
