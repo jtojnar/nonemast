@@ -44,6 +44,8 @@ devenv = environment()
 devenv.prepend('PYTHONPATH', meson.current_source_dir() / 'src')
 # Make nonemast program available on devenv’s PATH (Meson only auto-adds executables).
 devenv.prepend('PATH', meson.current_build_dir() / 'src/nonemast')
+# Make about dialog see icon.
+devenv.prepend('XDG_DATA_DIRS', meson.current_source_dir() / 'data')
 meson.add_devenv(devenv)
 
 gnome.post_install(
