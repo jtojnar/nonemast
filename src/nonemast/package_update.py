@@ -59,8 +59,9 @@ class CommitInfo(GObject.Object):
 
     id_gvariant = GObject.Property(type=GObject.TYPE_VARIANT)
 
-    def __init__(self, commit: Ggit.Commit, **kwargs):
+    def __init__(self, repo: Ggit.Repository, commit: Ggit.Commit, **kwargs):
         super().__init__(**kwargs)
+        self._repo = repo
         self._commit = commit
 
         self.bind_property(
@@ -92,6 +93,28 @@ class CommitInfo(GObject.Object):
         else:
             return "message-initial"
 
+    @GObject.Property(type=str)
+    def description(self):
+        commit_parents = self._commit.get_parents()
+
+        if commit_parents.get_size() > 0:
+            parent_commit = commit_parents.get(0)
+            commit_tree = self._commit.get_tree()
+            parent_tree = parent_commit.get_tree()
+
+            diff = Ggit.Diff.new_tree_to_tree(
+                self._repo, parent_tree, commit_tree, None
+            )
+
+            num_deltas = diff.get_num_deltas()
+            return (
+                f"{num_deltas} delta in diff"
+                if num_deltas == 1
+                else f"{num_deltas} deltas in diff"
+            )
+
+        return ""
+
     def get_commit(self) -> Ggit.Commit:
         return self._commit
 
@@ -104,8 +127,15 @@ class PackageUpdate(GObject.Object):
     editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
 
-    def __init__(self, subject: str, commits: list[Ggit.Commit], **kwargs):
+    def __init__(
+        self,
+        repo: Ggit.Repository,
+        subject: str,
+        commits: list[Ggit.Commit],
+        **kwargs,
+    ):
         super().__init__(**kwargs)
+        self._repo = repo
         self._subject = subject
         self._commits = Gio.ListStore.new(CommitInfo)
         self._message_lines: list[str] = []
@@ -138,7 +168,7 @@ class PackageUpdate(GObject.Object):
         )
 
     def add_commit(self, commit: Ggit.Commit) -> None:
-        self._commits.append(CommitInfo(commit=commit))
+        self._commits.append(CommitInfo(repo=self._repo, commit=commit))
 
         subject, *msg_lines = commit.get_message().splitlines()
         # Clone list so we can detect changes.

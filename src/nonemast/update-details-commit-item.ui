@@ -11,6 +11,11 @@
 						<lookup name="item">GtkListItem</lookup>
 					</lookup>
 				</binding>
+				<binding name="subtitle">
+					<lookup name="description" type="CommitInfo">
+						<lookup name="item">GtkListItem</lookup>
+					</lookup>
+				</binding>
 				<binding name="icon-name">
 					<lookup name="icon" type="CommitInfo">
 						<lookup name="item">GtkListItem</lookup>

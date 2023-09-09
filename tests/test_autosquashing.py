@@ -73,6 +73,7 @@ def check_autosquashing(commit_messages: list[str]) -> None:
     update = PackageUpdate(
         subject="Foo",
         commits=commits,
+        repo=None,
     )
 
     expected = autosquash_commits_with_git(commit_messages)

@@ -389,6 +389,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         for subject, commits in updates.items():
             self._updates_subject_indices[subject] = index
             update = PackageUpdate(
+                repo=self._repo,
                 subject=subject,
                 commits=commits,
             )
