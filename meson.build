@@ -35,7 +35,7 @@ nonemast_pkgdatadir = nonemast_datadir / meson.project_name()
 application_id = 'cz.ogion.Nonemast'
 
 subdir('data')
-subdir('src')
+subdir('src/nonemast')
 subdir('po')
 subdir('tests')
 

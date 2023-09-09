@@ -11,11 +11,11 @@ import subprocess
 import tempfile
 
 try:
-    from ..src.package_update import PackageUpdate
+    from ..src.nonemast.package_update import PackageUpdate
 except:
     # For some reason, the above fails with the following inside nix-build:
     #     ImportError: attempted relative import beyond top-level package
-    from src.package_update import PackageUpdate
+    from src.nonemast.package_update import PackageUpdate
 
 
 class FakeCommit(Ggit.Commit):

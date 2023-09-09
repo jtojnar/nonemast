@@ -8,8 +8,8 @@
 		<file preprocess="xml-stripblanks">update-item.ui</file>
 	</gresource>
 	<gresource prefix="/cz/ogion/Nonemast/icons/scalable/actions/">
-	  <file preprocess="xml-stripblanks" alias="test-pass-symbolic.svg">../data/icons/test-pass-symbolic.svg</file>
-	  <file preprocess="xml-stripblanks" alias="external-link-symbolic.svg">../data/icons/external-link-symbolic.svg</file>
-	  <file preprocess="xml-stripblanks" alias="funnel-symbolic.svg">../data/icons/funnel-symbolic.svg</file>
+	  <file preprocess="xml-stripblanks" alias="test-pass-symbolic.svg">../../data/icons/test-pass-symbolic.svg</file>
+	  <file preprocess="xml-stripblanks" alias="external-link-symbolic.svg">../../data/icons/external-link-symbolic.svg</file>
+	  <file preprocess="xml-stripblanks" alias="funnel-symbolic.svg">../../data/icons/funnel-symbolic.svg</file>
 	</gresource>
 </gresources>
