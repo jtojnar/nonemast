@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v23
+
+    - name: Build Nix package
+      run: nix-build
+
+    - name: Configure outside of Nix sandbox
+      run: nix-shell --run 'meson setup _build'
+
+    - name: Build outside of Nix sandbox
+      run: nix-shell --run 'meson compile -C _build'
+
+    - name: Run tests
+      run: nix-shell --run 'meson test -C _build'
+
+    - uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: testlog
+        path: _build/meson-logs/testlog.txt
