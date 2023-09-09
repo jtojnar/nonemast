@@ -5,6 +5,7 @@
 		<property name="child">
 			<object class="AdwActionRow">
 				<property name="title-selectable">true</property>
+				<property name="title-lines">1</property>
 				<binding name="title">
 					<lookup name="id" type="CommitInfo">
 						<lookup name="item">GtkListItem</lookup>
