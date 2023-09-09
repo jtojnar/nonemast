@@ -31,6 +31,8 @@ meson test -C _build
 meson devenv -C _build/ nonemast /path/to/nixpkgs
 ```
 
+The code is formatted with [Black](https://github.com/psf/black), you can run `meson compile -C _build lint-fix` to enforce the formatting.
+
 We include [Nix](https://nixos.org) developement environment so you can just run `nix-shell` in the project directory (or `nix develop` with flakes) to enter a shell with all the dependencies installed.
 
 ## License

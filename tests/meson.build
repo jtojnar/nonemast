@@ -13,3 +13,53 @@ if pytest.found()
   )
 endif
 
+black = find_program('black', required: false)
+if black.found()
+  python_sources = [
+    meson.current_source_dir(),
+    meson.current_source_dir() / '../src/',
+  ]
+
+  test(
+    'Lint Python coding style',
+    black,
+    args: [
+      '--check',
+      '--diff',
+    ] + python_sources,
+  )
+
+  run_target(
+    'lint',
+    command: [
+      black,
+      '--check',
+      '--diff',
+    ] + python_sources,
+  )
+
+  run_target(
+    'lint-fix',
+    command: [
+      black,
+    ] + python_sources,
+  )
+else
+  run_target(
+    'lint',
+    command: [
+      python3,
+      '-c',
+      'import sys; print("error: lint target requires ‘black’ tool to be available on PATH. If you have Nix, you can get it by running nix-shell.", file=sys.stderr); sys.exit(1)',
+    ],
+  )
+
+  run_target(
+    'lint-fix',
+    command: [
+      python3,
+      '-c',
+      'import sys; print("error: lint-fix target requires ‘black’ tool to be available on PATH. If you have Nix, you can get it by running nix-shell.", file=sys.stderr); sys.exit(1)',
+    ],
+  )
+endif
