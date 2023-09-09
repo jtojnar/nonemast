@@ -20,6 +20,19 @@ But that would make it easy to miss some review commit far from the original com
 
 This tool allows maintainers to preview Git log as if it was auto-squashed and additionally highlights the reviewed commits visually.
 
+## How to develop nonemast?
+
+We use [Meson](https://mesonbuild.com/) build system so you can configure, build, test and run it as usual:
+
+```shell
+meson setup _build
+meson compile -C _build
+meson test -C _build
+meson devenv -C _build/ nonemast /path/to/nixpkgs
+```
+
+We include [Nix](https://nixos.org) developement environment so you can just run `nix-shell` in the project directory (or `nix develop` with flakes) to enter a shell with all the dependencies installed.
+
 ## License
 
 The code is licensed under [MIT](LICENSE.md).

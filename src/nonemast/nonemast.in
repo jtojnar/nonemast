@@ -23,7 +23,11 @@ if __name__ == '__main__':
     import gi
 
     from gi.repository import Gio
-    resource = Gio.Resource.load(os.path.join(pkgdatadir, 'nonemast.gresource'))
+
+    is_inside_devenv = os.environ.get('MESON_DEVENV', '0') == '1'
+    resource_dir = os.path.dirname(os.path.realpath(__file__)) if is_inside_devenv else pkgdatadir
+    resource_path = os.path.join(resource_dir, 'nonemast.gresource')
+    resource = Gio.Resource.load(resource_path)
     resource._register()
 
     from nonemast import main

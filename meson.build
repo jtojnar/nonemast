@@ -39,6 +39,13 @@ subdir('src/nonemast')
 subdir('po')
 subdir('tests')
 
+devenv = environment()
+# Make nonemast module available without installation.
+devenv.prepend('PYTHONPATH', meson.current_source_dir() / 'src')
+# Make nonemast program available on devenv’s PATH (Meson only auto-adds executables).
+devenv.prepend('PATH', meson.current_build_dir() / 'src/nonemast')
+meson.add_devenv(devenv)
+
 gnome.post_install(
   gtk_update_icon_cache: true,
   update_desktop_database: true,
