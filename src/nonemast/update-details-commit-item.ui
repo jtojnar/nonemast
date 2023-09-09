@@ -10,6 +10,11 @@
 						<lookup name="item">GtkListItem</lookup>
 					</lookup>
 				</binding>
+				<binding name="icon-name">
+					<lookup name="icon" type="CommitInfo">
+						<lookup name="item">GtkListItem</lookup>
+					</lookup>
+				</binding>
 				<child>
 					<object class="GtkButton">
 						<property name="tooltip-text" translatable="yes">View in external tool</property>

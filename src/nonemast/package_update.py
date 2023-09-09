@@ -75,6 +75,23 @@ class CommitInfo(GObject.Object):
     def id(self):
         return self._commit.get_id().to_string()
 
+    @GObject.Property(type=str)
+    def icon(self):
+        subject = self._commit.get_subject()
+        assert subject is not None, "subject cannot be empty"
+
+        if subject.startswith("fixup! "):
+            message = self._commit.get_message()
+            assert message is not None, "message cannot be empty"
+            message_body_is_empty = message.strip() == subject.strip()
+            return "message-fixup-empty" if message_body_is_empty else "message-fixup"
+        elif subject.startswith("amend! "):
+            return "message-amend"
+        elif subject.startswith("squash! "):
+            return "message-squash"
+        else:
+            return "message-initial"
+
     def get_commit(self) -> Ggit.Commit:
         return self._commit
 
