@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Jan Tojnar
 # SPDX-License-Identifier: MIT
 
+from gettext import gettext as _, ngettext
 from gi.repository import Ggit
 from gi.repository import Gio
 from gi.repository import GLib
@@ -107,11 +108,11 @@ class CommitInfo(GObject.Object):
             )
 
             num_deltas = diff.get_num_deltas()
-            return (
-                f"{num_deltas} delta in diff"
-                if num_deltas == 1
-                else f"{num_deltas} deltas in diff"
-            )
+            return ngettext(
+                "%(num_deltas)d delta in diff",
+                "%(num_deltas)d deltas in diff",
+                num_deltas,
+            ) % {"num_deltas": num_deltas}
 
         return ""
 
@@ -195,7 +196,7 @@ class PackageUpdate(GObject.Object):
         )
         url = find_changelog_link(self._message_lines)
         if url is None:
-            self.props.changelog_link = "No changelog detected."
+            self.props.changelog_link = _("No changelog detected.")
         else:
             url = try_getting_corresponding_github_link(url)
             self.props.changelog_link = (
