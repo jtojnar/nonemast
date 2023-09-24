@@ -90,6 +90,44 @@ class CommitInfo(GObject.Object):
         return self._commit
 
 
+class CommitSquasher:
+    """
+    Simulates what `git rebase --autosquash` does to commit messages.
+    """
+
+    _message_lines: list[str]
+
+    def __init__(self, commit_messages: list[str] = []):
+        self._message_lines = []
+        for message in commit_messages:
+            self.add_commit(message)
+
+    def add_commit(self, message: str) -> None:
+        subject, *msg_lines = message.splitlines()
+        if subject.startswith("fixup! "):
+            return
+        elif subject.startswith("amend! "):
+            # Starting from scratch.
+            self._message_lines = []
+            # Drop empty line after subject.
+            match msg_lines:
+                case ["", *rest]:
+                    msg_lines = rest
+        elif not subject.startswith("squash! "):
+            # The subject from non-squash commits remains.
+            self._message_lines += [subject]
+
+        self._message_lines += msg_lines
+
+    def get_lines(self) -> str:
+        """
+        Returns the final commit message split into lines.
+
+        Returns a **copy** of the list.
+        """
+        return list(self._message_lines)
+
+
 class PackageUpdate(GObject.Object):
     __gtype_name__ = "PackageUpdate"
 
@@ -97,6 +135,7 @@ class PackageUpdate(GObject.Object):
     commit_message_is_edited = GObject.Property(type=bool, default=False)
     editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
+    _message_squasher: CommitSquasher
 
     def __init__(
         self,
@@ -109,7 +148,7 @@ class PackageUpdate(GObject.Object):
         self._repo = repo
         self._subject = subject
         self._commits = Gio.ListStore.new(CommitInfo)
-        self._message_lines: list[str] = []
+        self._message_squasher = CommitSquasher()
 
         self.bind_property(
             "subject",
@@ -141,30 +180,17 @@ class PackageUpdate(GObject.Object):
     def add_commit(self, commit: Ggit.Commit) -> None:
         self._commits.append(CommitInfo(repo=self._repo, commit=commit))
 
-        subject, *msg_lines = commit.get_message().splitlines()
-        # Clone list so we can detect changes.
-        old_message_lines = list(self._message_lines)
-        if subject.startswith("fixup! "):
-            return
-        elif subject.startswith("amend! "):
-            # Starting from scratch.
-            self._message_lines = []
-            # Drop empty line after subject.
-            match msg_lines:
-                case ["", *rest]:
-                    msg_lines = rest
-        elif not subject.startswith("squash! "):
-            # The subject from non-squash commits remains.
-            self._message_lines += [subject]
+        old_message_lines = self._message_squasher.get_lines()
+        self._message_squasher.add_commit(commit.get_message())
+        new_message_lines = self._message_squasher.get_lines()
 
-        self._message_lines += msg_lines
-        if old_message_lines != self._message_lines:
+        if old_message_lines != new_message_lines:
             self.notify("final-commit-message")
 
         self.props.changes_reviewed = any(
-            has_changelog_reviewed_tag(line) for line in self._message_lines
+            has_changelog_reviewed_tag(line) for line in new_message_lines
         )
-        url = find_changelog_link(self._message_lines)
+        url = find_changelog_link(new_message_lines)
         if url is None:
             self.props.changelog_link = "No changelog detected."
         else:
@@ -179,11 +205,7 @@ class PackageUpdate(GObject.Object):
 
     @GObject.Property(type=str)
     def final_commit_message(self):
-        return "\n".join(self._message_lines)
-
-    @final_commit_message.setter
-    def final_commit_message(self, message):
-        self._message_lines = message.splitlines()
+        return "\n".join(self._message_squasher.get_lines())
 
     @GObject.Property(type=str)
     def changelog_link(self):
