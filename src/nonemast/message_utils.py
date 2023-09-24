@@ -9,7 +9,7 @@ import re
 
 
 def has_changelog_reviewed_tag(line: str) -> bool:
-    return re.match(r"^Changelog-Reviewed-By: ", line) is not None
+    return re.match(r"^Changelog-Reviewed-By: ", line, re.IGNORECASE) is not None
 
 
 def find_changelog_link(lines: list[str]) -> Optional[str]:
