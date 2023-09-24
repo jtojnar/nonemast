@@ -6,13 +6,21 @@ from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
 from linkify_it import LinkifyIt
-from typing import Optional
+from typing import Any, Optional
 import html
 import re
 
 
-def has_changelog_reviewed_tag(line: str) -> bool:
-    return re.match(r"^Changelog-Reviewed-By: ", line, re.IGNORECASE) is not None
+def has_trailer(trailer: str, line: str) -> bool:
+    trailer_re = re.escape(trailer)
+    return (
+        re.search(
+            rf"^{trailer_re}: ",
+            line,
+            re.IGNORECASE | re.MULTILINE,
+        )
+        is not None
+    )
 
 
 def try_getting_corresponding_github_link(url: str) -> str:
@@ -166,15 +174,21 @@ class PackageUpdate(GObject.Object):
     final_commit_message_rich = GObject.Property(type=str)
     _message_squasher: CommitSquasher
 
+    review_actions_menu = GObject.Property(type=Gio.Menu)
+
+    _window: "NonemastWindow"
+
     def __init__(
         self,
         repo: Ggit.Repository,
         subject: str,
         commits: list[Ggit.Commit],
+        window: "NonemastWindow",
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._repo = repo
+        self._window = window
         self._subject = subject
         self._commits = Gio.ListStore.new(CommitInfo)
         self._message_squasher = CommitSquasher()
@@ -206,6 +220,47 @@ class PackageUpdate(GObject.Object):
             lambda _binding, editing: "editing" if editing else "not-editing",
         )
 
+        self._window.connect(
+            "notify::last-used-review-action-index",
+            lambda _window, _prop: self._update_menu(),
+        )
+        self.connect(
+            "notify::final-commit-message",
+            lambda _window, _prop: self._update_menu(),
+        )
+        self._update_menu()
+
+    def _update_menu(self) -> None:
+        last_action_index = self._window.last_used_review_action_index
+        # Move the last action to the front so that SplitButton displays it in the visible portion.
+        review_actions = (
+            [self._window.review_actions[last_action_index]]
+            + self._window.review_actions[0:last_action_index]
+            + self._window.review_actions[last_action_index + 1 :]
+        )
+
+        review_actions = [
+            review_action
+            for review_action in review_actions
+            if not has_trailer(review_action.trailer, self.final_commit_message)
+        ]
+
+        menu = Gio.Menu.new()
+        for review_action in review_actions:
+            menu_item = Gio.MenuItem.new(review_action.label, None)
+            menu_item.set_action_and_target_value(
+                "win.mark-as-reviewed",
+                GLib.Variant.new_tuple(
+                    self.subject_gvariant,
+                    GLib.Variant.new_string(review_action.trailer),
+                ),
+            )
+            icon = Gio.ThemedIcon.new(review_action.icon)
+            menu_item.set_icon(icon)
+
+            menu.append_item(menu_item)
+        self.review_actions_menu = menu
+
     def add_commit(self, commit: Ggit.Commit) -> None:
         self._commits.append(CommitInfo(repo=self._repo, commit=commit))
 
@@ -217,7 +272,7 @@ class PackageUpdate(GObject.Object):
             self.notify("final-commit-message")
 
         self.props.changes_reviewed = any(
-            has_changelog_reviewed_tag(line) for line in new_message_lines
+            has_trailer("Changelog-reviewed-by", line) for line in new_message_lines
         )
         url = find_changelog_link(new_message_lines)
         if url is None:
