@@ -9,13 +9,15 @@ from linkify_it import LinkifyIt
 from typing import Any, Optional
 import html
 import re
+from .git_utils import signature_to_string
 
 
-def has_trailer(trailer: str, line: str) -> bool:
+def has_trailer(trailer: str, line: str, user: str = "") -> bool:
     trailer_re = re.escape(trailer)
+    user_re = re.escape(user)
     return (
         re.search(
-            rf"^{trailer_re}: ",
+            rf"^{trailer_re}: {user_re}",
             line,
             re.IGNORECASE | re.MULTILINE,
         )
@@ -239,15 +241,33 @@ class PackageUpdate(GObject.Object):
             + self._window.review_actions[last_action_index + 1 :]
         )
 
+        signature = signature_to_string(self._window.make_git_signature())
         review_actions = [
-            review_action
+            (
+                review_action,
+                has_trailer(review_action.trailer, self.final_commit_message),
+            )
             for review_action in review_actions
-            if not has_trailer(review_action.trailer, self.final_commit_message)
+            if not has_trailer(
+                review_action.trailer,
+                self.final_commit_message,
+                signature,
+            )
         ]
 
         menu = Gio.Menu.new()
-        for review_action in review_actions:
-            menu_item = Gio.MenuItem.new(review_action.label, None)
+        for review_action, already_done_by_another_user in review_actions:
+            label = (
+                review_action.label_plus_one
+                if already_done_by_another_user
+                else review_action.label
+            )
+            icon_name = (
+                review_action.icon_plus_one
+                if already_done_by_another_user
+                else review_action.icon
+            )
+            menu_item = Gio.MenuItem.new(label, None)
             menu_item.set_action_and_target_value(
                 "win.mark-as-reviewed",
                 GLib.Variant.new_tuple(
@@ -255,7 +275,7 @@ class PackageUpdate(GObject.Object):
                     GLib.Variant.new_string(review_action.trailer),
                 ),
             )
-            icon = Gio.ThemedIcon.new(review_action.icon)
+            icon = Gio.ThemedIcon.new(icon_name)
             menu_item.set_icon(icon)
 
             menu.append_item(menu_item)
