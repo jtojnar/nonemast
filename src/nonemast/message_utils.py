@@ -8,8 +8,16 @@ import html
 import re
 
 
-def has_changelog_reviewed_tag(line: str) -> bool:
-    return re.match(r"^Changelog-Reviewed-By: ", line, re.IGNORECASE) is not None
+def has_trailer(trailer: str, line: str) -> bool:
+    trailer_re = re.escape(trailer)
+    return (
+        re.search(
+            rf"^{trailer_re}: ",
+            line,
+            re.IGNORECASE | re.MULTILINE,
+        )
+        is not None
+    )
 
 
 def find_changelog_link(lines: list[str]) -> Optional[str]:

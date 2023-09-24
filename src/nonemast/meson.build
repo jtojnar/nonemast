@@ -6,6 +6,7 @@ moduledir = join_paths(nonemast_pkgdatadir, 'nonemast')
 blueprint_sources = files(
   'update-details-commit-item.blp',
   'gtk/help-overlay.blp',
+  'split-button.blp',
   'window.blp',
   'update-details.blp',
   'update-item.blp',

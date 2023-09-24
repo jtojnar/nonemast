@@ -8,6 +8,7 @@ from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gtk
 from collections import OrderedDict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, Optional
 import re
@@ -22,6 +23,13 @@ from .package_update import PackageUpdate
 
 
 SourceFuncResult = Literal[GLib.SOURCE_CONTINUE, GLib.SOURCE_REMOVE]
+
+
+@dataclass
+class ReviewAction:
+    trailer: str
+    icon: str
+    label: str
 
 
 def make_error_dialog(parent: Gtk.Window, text: str, **kwargs) -> Gtk.MessageDialog:
@@ -108,30 +116,80 @@ def get_merge_base(
 class UpdateDetails(Gtk.Box):
     __gtype_name__ = "UpdateDetails"
 
-    _update: Optional[PackageUpdate] = None
-
-    _binding: Optional[GObject.Binding] = None
     changes_not_reviewed = GObject.Property(type=bool, default=False)
+    update = GObject.Property(type=PackageUpdate)
+
+
+@Gtk.Template(resource_path="/cz/ogion/Nonemast/split-button.ui")
+class SplitButton(Gtk.Widget):
+    __gtype_name__ = "NonemastSplitButton"
+
+    menu_model = GObject.Property(type=Gio.MenuModel)
+
+    model_not_empty = GObject.Property(type=bool, default=False)
+    plurality = GObject.Property(type=str, default="one")
+    review_action_current_name = GObject.Property(type=str)
+    review_action_current_target = GObject.Property(type=GObject.TYPE_VARIANT)
+    review_action_current_icon = GObject.Property(type=str)
+    review_action_current_label = GObject.Property(type=str)
+    more_review_actions_menu = GObject.Property(type=Gio.Menu)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @GObject.Property(type=PackageUpdate)
-    def update(self) -> Optional[PackageUpdate]:
-        return self._update
+        self.connect("notify::menu-model", lambda _self, _model: self.model_changed())
 
-    @update.setter
-    def update(self, update: Optional[PackageUpdate]) -> None:
-        self._update = update
-        if self._binding is not None:
-            self._binding.unbind()
-        if self._update is not None:
-            self._binding = self._update.bind_property(
-                "changes-reviewed",
-                self,
-                "changes-not-reviewed",
-                GObject.BindingFlags.INVERT_BOOLEAN | GObject.BindingFlags.SYNC_CREATE,
+        self.model_changed()
+
+    def model_changed(self) -> None:
+        if self.menu_model is None:
+            return
+
+        item_count = self.menu_model.get_n_items()
+        self.model_not_empty = item_count > 0
+        self.plurality = "other" if item_count > 1 else "one"
+
+        menu = Gio.Menu.new()
+
+        for index in range(item_count):
+            review_action_name = self.menu_model.get_item_attribute_value(
+                index,
+                Gio.MENU_ATTRIBUTE_ACTION,
+                GLib.VariantType.new("s"),
+            ).get_string()
+            review_action_target = self.menu_model.get_item_attribute_value(
+                index,
+                Gio.MENU_ATTRIBUTE_TARGET,
+                GLib.VariantType.new("(ss)"),
             )
+            review_action_label = self.menu_model.get_item_attribute_value(
+                index,
+                Gio.MENU_ATTRIBUTE_LABEL,
+                GLib.VariantType.new("s"),
+            ).get_string()
+            review_action_icon = Gio.icon_deserialize(
+                self.menu_model.get_item_attribute_value(
+                    index,
+                    Gio.MENU_ATTRIBUTE_ICON,
+                    GLib.VariantType.new("(sv)"),
+                )
+            )
+
+            if index == 0:
+                self.review_action_current_name = review_action_name
+                self.review_action_current_target = review_action_target
+                self.review_action_current_label = review_action_label
+                self.review_action_current_icon = review_action_icon.get_names()[0]
+            else:
+                menu_item = Gio.MenuItem.new(review_action_label)
+                menu_item.set_action_and_target_value(
+                    review_action_name,
+                    review_action_target,
+                )
+                menu_item.set_icon(review_action_icon)
+                menu.append_item(menu_item)
+
+        self.more_review_actions_menu = menu
 
 
 @Gtk.Template(resource_path="/cz/ogion/Nonemast/window.ui")
@@ -154,6 +212,21 @@ class NonemastWindow(Adw.ApplicationWindow):
     _repo: Ggit.Repository
     _base_revspec: Optional[str]
 
+    review_actions = [
+        ReviewAction(
+            trailer="Changelog-reviewed-by",
+            icon="emblem-ok-symbolic",
+            label=_("Mark changelog as reviewed"),
+        ),
+        ReviewAction(
+            trailer="Tested-by",
+            icon="emblem-ok-symbolic",
+            label=_("Mark as tested"),
+        ),
+    ]
+
+    last_used_review_action_index = GObject.Property(type=int, default=0)
+
     def __init__(
         self,
         repo_path: Gio.File,
@@ -174,7 +247,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         action.connect("activate", self.ensure_coauthors)
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("mark-as-reviewed", GLib.VariantType.new("s"))
+        action = Gio.SimpleAction.new("mark-as-reviewed", GLib.VariantType.new("(ss)"))
         action.connect("activate", self.mark_as_reviewed)
         self.add_action(action)
 
@@ -257,14 +330,26 @@ class NonemastWindow(Adw.ApplicationWindow):
         action: Gio.SimpleAction,
         parameter: GLib.Variant,
     ) -> None:
-        original_commit_subject = parameter.get_string()
+        original_commit_subject = parameter[0]
+        trailer = parameter[1]
         signature = self.make_git_signature()
-        commit_message = f"squash! {original_commit_subject}\n\nChangelog-Reviewed-By: {signature_to_string(signature)}"
+
+        for action_index, review_action in enumerate(self.review_actions):
+            if review_action.trailer == trailer:
+                new_last_used_review_action_index = action_index
+                break
+
+        # There needs to be an empty line or --autosquash will consider the second line part of the commit subject.
+        # Unfortunately, this will result in multiple trailers being separated by an empty line.
+        commit_message = f"squash! {original_commit_subject}\n\n{trailer}: {signature_to_string(signature)}"
         self.create_empty_commit(
             target_subject=original_commit_subject,
             message=commit_message,
             author=signature,
         )
+
+        if new_last_used_review_action_index != self.last_used_review_action_index:
+            self.last_used_review_action_index = new_last_used_review_action_index
 
     def edit_commit_message(
         self,
@@ -396,6 +481,7 @@ class NonemastWindow(Adw.ApplicationWindow):
                 repo=self._repo,
                 subject=subject,
                 commits=commits,
+                window=self,
             )
             self.props.updates.append(update)
             index += 1
