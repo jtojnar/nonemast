@@ -8,11 +8,12 @@ import html
 import re
 
 
-def has_trailer(trailer: str, line: str) -> bool:
+def has_trailer(trailer: str, line: str, user: str = "") -> bool:
     trailer_re = re.escape(trailer)
+    user_re = re.escape(user)
     return (
         re.search(
-            rf"^{trailer_re}: ",
+            rf"^{trailer_re}: {user_re}",
             line,
             re.IGNORECASE | re.MULTILINE,
         )

@@ -29,7 +29,9 @@ SourceFuncResult = Literal[GLib.SOURCE_CONTINUE, GLib.SOURCE_REMOVE]
 class ReviewAction:
     trailer: str
     icon: str
+    icon_plus_one: str
     label: str
+    label_plus_one: str
 
 
 def make_error_dialog(parent: Gtk.Window, text: str, **kwargs) -> Gtk.MessageDialog:
@@ -215,13 +217,17 @@ class NonemastWindow(Adw.ApplicationWindow):
     review_actions = [
         ReviewAction(
             trailer="Changelog-reviewed-by",
-            icon="emblem-ok-symbolic",
+            icon="mark-reviewed-symbolic",
             label=_("Mark changelog as reviewed"),
+            icon_plus_one="mark-reviewed-plus-one-symbolic",
+            label_plus_one=_("Second changelog review"),
         ),
         ReviewAction(
             trailer="Tested-by",
-            icon="emblem-ok-symbolic",
+            icon="mark-reviewed-symbolic",
             label=_("Mark as tested"),
+            icon_plus_one="mark-reviewed-plus-one-symbolic",
+            label_plus_one=_("Second testing"),
         ),
     ]
 

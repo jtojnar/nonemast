@@ -5,6 +5,7 @@ from gi.repository import Ggit
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
+from .git_utils import signature_to_string
 from .message_utils import (
     has_trailer,
     find_changelog_link,
@@ -202,15 +203,33 @@ class PackageUpdate(GObject.Object):
             + self._window.review_actions[last_action_index + 1 :]
         )
 
+        signature = signature_to_string(self._window.make_git_signature())
         review_actions = [
-            review_action
+            (
+                review_action,
+                has_trailer(review_action.trailer, self.final_commit_message),
+            )
             for review_action in review_actions
-            if not has_trailer(review_action.trailer, self.final_commit_message)
+            if not has_trailer(
+                review_action.trailer,
+                self.final_commit_message,
+                signature,
+            )
         ]
 
         menu = Gio.Menu.new()
-        for review_action in review_actions:
-            menu_item = Gio.MenuItem.new(review_action.label, None)
+        for review_action, already_done_by_another_user in review_actions:
+            label = (
+                review_action.label_plus_one
+                if already_done_by_another_user
+                else review_action.label
+            )
+            icon_name = (
+                review_action.icon_plus_one
+                if already_done_by_another_user
+                else review_action.icon
+            )
+            menu_item = Gio.MenuItem.new(label, None)
             menu_item.set_action_and_target_value(
                 "win.mark-as-reviewed",
                 GLib.Variant.new_tuple(
@@ -218,7 +237,7 @@ class PackageUpdate(GObject.Object):
                     GLib.Variant.new_string(review_action.trailer),
                 ),
             )
-            icon = Gio.ThemedIcon.new(review_action.icon)
+            icon = Gio.ThemedIcon.new(icon_name)
             menu_item.set_icon(icon)
 
             menu.append_item(menu_item)
