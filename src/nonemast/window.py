@@ -31,6 +31,7 @@ class ReviewAction:
     icon_plus_one: str
     label: str
     label_plus_one: str
+    sufficient: bool = False
 
 
 def make_error_dialog(parent: Gtk.Window, text: str, **kwargs) -> Gtk.MessageDialog:
@@ -223,6 +224,7 @@ class NonemastWindow(Adw.ApplicationWindow):
             label=_("Mark changelog as reviewed"),
             icon_plus_one="mark-reviewed-plus-one-symbolic",
             label_plus_one=_("Second changelog review"),
+            sufficient=True,
         ),
         ReviewAction(
             trailer="Tested-by",
@@ -230,6 +232,14 @@ class NonemastWindow(Adw.ApplicationWindow):
             label=_("Mark as tested"),
             icon_plus_one="mark-reviewed-plus-one-symbolic",
             label_plus_one=_("Second testing"),
+        ),
+        ReviewAction(
+            trailer="Acked-by",
+            icon="mark-reviewed-symbolic",
+            label=_("Mark as acked"),
+            icon_plus_one="mark-reviewed-plus-one-symbolic",
+            label_plus_one=_("Second ack"),
+            sufficient=True,
         ),
     ]
 
