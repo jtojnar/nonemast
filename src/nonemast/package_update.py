@@ -137,6 +137,7 @@ class PackageUpdate(GObject.Object):
     editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
     _message_squasher: CommitSquasher
+    changes_reviewed = GObject.Property(type=bool, default=False)
 
     review_actions_menu = GObject.Property(type=Gio.Menu)
 
@@ -283,14 +284,6 @@ class PackageUpdate(GObject.Object):
     @changelog_link.setter
     def changelog_link(self, changelog_link: str) -> None:
         self._changelog_link = changelog_link
-
-    @GObject.Property(type=bool, default=False)
-    def changes_reviewed(self):
-        return self._changes_reviewed
-
-    @changes_reviewed.setter
-    def changes_reviewed(self, changes_reviewed):
-        self._changes_reviewed = changes_reviewed
 
     @GObject.Property(type=Gio.ListStore)
     def commits(self):
