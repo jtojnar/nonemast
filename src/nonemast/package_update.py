@@ -254,7 +254,10 @@ class PackageUpdate(GObject.Object):
             self.notify("final-commit-message")
 
         self.props.changes_reviewed = any(
-            has_trailer("Changelog-reviewed-by", line) for line in new_message_lines
+            has_trailer(action.trailer, line)
+            for line in new_message_lines
+            for action in self._window.review_actions
+            if action.sufficient
         )
         url = find_changelog_link(new_message_lines)
         if url is None:
