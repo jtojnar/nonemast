@@ -1,0 +1,208 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $NonemastWindow: Adw.ApplicationWindow {
+  default-width: 780;
+  default-height: 420;
+
+  Adw.Leaflet leaflet {
+    can-navigate-back: true;
+
+    Box {
+      orientation: vertical;
+
+      Adw.HeaderBar {
+        show-end-title-buttons: bind leaflet.folded;
+
+        title-widget: Adw.WindowTitle {
+          title: _('Not Nearly Enough Masking Tape');
+        };
+
+        ToggleButton {
+          active: bind search_bar.search-mode-enabled bidirectional;
+          focus-on-click: false;
+          icon-name: 'edit-find-symbolic';
+          tooltip-text: _('Search');
+        }
+
+        MenuButton {
+          icon-name: 'funnel-symbolic';
+          menu-model: filter-menu;
+          tooltip-text: _('Filter');
+        }
+
+        [end]
+        MenuButton {
+          icon-name: 'open-menu-symbolic';
+          menu-model: primary_menu;
+        }
+      }
+
+      Stack updates_list_stack {
+        StackPage {
+          name: 'loading';
+
+          child: Box {
+            orientation: vertical;
+            spacing: 12;
+            valign: center;
+
+            Spinner {
+              width-request: 32;
+              height-request: 32;
+              spinning: true;
+            }
+
+            Label {
+              label: _('Loading commits…');
+            }
+          };
+        }
+
+        StackPage {
+          name: 'error';
+
+          child: Adw.StatusPage updates_list_error {
+            icon-name: 'face-uncertain-symbolic';
+            title: _('Error obtaining commit list.');
+          };
+        }
+
+        StackPage {
+          name: 'list';
+
+          child: Box {
+            orientation: vertical;
+
+            SearchBar search_bar {
+              key-capture-widget: template;
+
+              SearchEntry search_entry {
+                search-changed => $on_search_changed();
+
+                accessibility {
+                  controls: updates_list_view;
+                }
+              }
+            }
+
+            ScrolledWindow {
+              hexpand: false;
+              vexpand: true;
+              hscrollbar-policy: never;
+
+              ListView updates_list_view {
+                show-separators: true;
+
+                factory: BuilderListItemFactory {
+                  resource: '/cz/ogion/Nonemast/update-item.ui';
+                };
+
+                model: SingleSelection {
+                  notify::selected-item => $on_selected_item_changed();
+
+                  model: FilterListModel updates_filter_model {
+                    filter: updates_search_filter;
+                    model: bind template.updates;
+                  };
+                };
+              }
+            }
+          };
+        }
+      }
+    }
+
+    Adw.LeafletPage {
+      navigatable: false;
+
+      child: Separator {};
+    }
+
+    Box {
+      orientation: vertical;
+      hexpand: true;
+
+      Adw.HeaderBar {
+        show-start-title-buttons: bind leaflet.folded;
+
+        Button {
+          visible: bind leaflet.folded;
+          icon-name: 'go-previous-symbolic';
+        }
+
+        title-widget: Adw.WindowTitle {};
+      }
+
+      Stack details_stack {
+        StackPage {
+          name: 'no-update-selected';
+
+          child: Adw.StatusPage {
+            title: _('No updates selected.');
+          };
+        }
+
+        StackPage {
+          name: 'details';
+
+          child: ScrolledWindow {
+            hexpand: false;
+            vexpand: true;
+            hscrollbar-policy: never;
+
+            $UpdateDetails update_details {
+              margin-top: '12';
+              margin-bottom: '12';
+              margin-start: '12';
+              margin-end: '12';
+            }
+          };
+        }
+      }
+    }
+  }
+}
+
+menu primary_menu {
+  section {
+    item {
+      label: _('Ensure _Co-authors');
+      action: 'win.ensure-coauthors';
+    }
+  }
+
+  section {
+    item {
+      label: _('_Keyboard Shortcuts');
+      action: 'win.show-help-overlay';
+    }
+
+    item {
+      label: _('_About Not Nearly Enough Masking Tape');
+      action: 'app.about';
+    }
+  }
+}
+
+CustomFilter updates_search_filter {}
+
+menu filter-menu {
+  item {
+    label: _('_All');
+    action: 'win.filter';
+    target: 'all';
+  }
+
+  item {
+    label: _('_Reviewed');
+    action: 'win.filter';
+    target: 'reviewed';
+  }
+
+  item {
+    label: _('_Unreviewed');
+    action: 'win.filter';
+    target: 'unreviewed';
+  }
+}

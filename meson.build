@@ -22,6 +22,13 @@ python3 = python.find_installation(
   ],
 )
 
+blueprint_compiler = find_program(
+  'blueprint-compiler',
+  version: '>= 0.8.2',
+  required: true,
+  native: true,
+)
+
 dependency('gtk4', version: '>= 4.6.0')
 dependency('libadwaita-1', version: '>= 1.2.alpha')
 dependency('libgit2-glib-1.0', version: ['>= 1.0.0'])

@@ -1,0 +1,25 @@
+using Gtk 4.0;
+using Adw 1;
+
+template ListItem {
+  activatable: false;
+
+  child: Adw.ActionRow {
+    title-selectable: true;
+    title-lines: 1;
+    title: bind template.item as <$CommitInfo>.id;
+    subtitle: bind template.item as <$CommitInfo>.description;
+    icon-name: bind template.item as <$CommitInfo>.icon;
+
+    Button {
+      tooltip-text: _('View in external tool');
+      icon-name: 'external-link-symbolic';
+      action-name: 'win.view-commit';
+      action-target: bind template.item as <$CommitInfo>.id-gvariant;
+
+      styles [
+        "flat",
+      ]
+    }
+  };
+}

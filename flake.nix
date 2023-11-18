@@ -58,6 +58,7 @@
             meson
             ninja
             pkg-config
+            blueprint-compiler
             gobject-introspection
             desktop-file-utils
             gtk4 # for gtk4-update-icon-cache

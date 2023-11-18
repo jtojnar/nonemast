@@ -13,6 +13,23 @@ if pytest.found()
   )
 endif
 
+test(
+  'Lint Blueprint coding style',
+  blueprint_compiler,
+  args: [
+    'format',
+  ] + blueprint_sources,
+)
+
+run_target(
+  'lint-blp',
+  command: [
+    blueprint_compiler,
+    'format',
+    '--fix',
+  ] + blueprint_sources,
+)
+
 black = find_program('black', required: false)
 if black.found()
   python_sources = [

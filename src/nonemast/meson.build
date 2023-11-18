@@ -3,9 +3,31 @@
 
 moduledir = join_paths(nonemast_pkgdatadir, 'nonemast')
 
+blueprint_sources = files(
+  'update-details-commit-item.blp',
+  'gtk/help-overlay.blp',
+  'window.blp',
+  'update-details.blp',
+  'update-item.blp',
+)
+
+blueprints = custom_target(
+  'blueprints',
+  input: blueprint_sources,
+  output: '.',
+  command: [
+    blueprint_compiler,
+    'batch-compile',
+    '@OUTPUT@',
+    '@CURRENT_SOURCE_DIR@',
+    '@INPUT@',
+  ],
+)
+
 gnome.compile_resources(
   'nonemast',
   'nonemast.gresource.xml',
+  dependencies: blueprints,
   gresource_bundle: true,
   install: true,
   install_dir: nonemast_pkgdatadir,

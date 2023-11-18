@@ -1,0 +1,29 @@
+using Gtk 4.0;
+
+template ListItem {
+  child: Box {
+    spacing: 12;
+    margin-top: 6;
+    margin-bottom: 6;
+    margin-start: 12;
+    margin-end: 12;
+    orientation: horizontal;
+
+    Label {
+      xalign: 0;
+      label: bind template.item as <$PackageUpdate>.subject;
+    }
+
+    Revealer {
+      reveal-child: bind template.item as <$PackageUpdate>.changes-reviewed;
+
+      Image {
+        hexpand: true;
+        halign: end;
+        has-tooltip: true;
+        tooltip-text: _('Changelog reviewed');
+        icon-name: 'test-pass-symbolic';
+      }
+    }
+  };
+}

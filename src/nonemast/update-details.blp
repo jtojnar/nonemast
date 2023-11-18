@@ -1,0 +1,88 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $UpdateDetails: Box {
+  orientation: vertical;
+
+  Adw.PreferencesGroup {
+    title: _('Changelog');
+
+    Adw.ActionRow {
+      use-markup: true;
+      title: bind template.update as <$PackageUpdate>.changelog-link;
+    }
+
+    header-suffix: Revealer {
+      reveal-child: bind template.changes-not-reviewed;
+
+      Button {
+        action-name: 'win.mark-as-reviewed';
+        action-target: bind template.update as <$PackageUpdate>.subject-gvariant;
+
+        child: Adw.ButtonContent {
+          icon-name: 'emblem-ok-symbolic';
+          label: _('Mark as reviewed');
+        };
+
+        styles [
+          "flat",
+        ]
+      }
+    };
+  }
+
+  Adw.PreferencesGroup {
+    title: _('Final commit message');
+
+    Adw.ActionRow {
+      use-markup: true;
+      title-selectable: true;
+      title: bind template.update as <$PackageUpdate>.final-commit-message-rich;
+    }
+
+    header-suffix: Stack {
+      visible-child-name: bind template.update as <$PackageUpdate>.editing-stack-page;
+
+      StackPage {
+        name: 'not-editing';
+
+        child: Button {
+          halign: end;
+          action-name: 'win.edit-commit-message';
+          action-target: bind template.update as <$PackageUpdate>.subject-gvariant;
+
+          child: Adw.ButtonContent {
+            icon-name: 'edit-symbolic';
+            label: _('Edit');
+          };
+
+          styles [
+            "flat",
+          ]
+        };
+      }
+
+      StackPage {
+        name: 'editing';
+
+        child: Label {
+          label: _('Currently editing');
+        };
+      }
+    };
+  }
+
+  Adw.PreferencesGroup {
+    title: _('Commits');
+
+    ListView commits_list_view {
+      factory: BuilderListItemFactory {
+        resource: '/cz/ogion/Nonemast/update-details-commit-item.ui';
+      };
+
+      model: NoSelection {
+        model: bind template.update as <$PackageUpdate>.commits;
+      };
+    }
+  }
+}
