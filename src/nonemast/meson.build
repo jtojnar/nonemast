@@ -12,7 +12,7 @@ gnome.compile_resources(
 )
 
 conf = configuration_data()
-conf.set('PYTHON', python3.path())
+conf.set('PYTHON', python3.full_path())
 conf.set('VERSION', meson.project_version())
 conf.set('localedir', nonemast_localedir)
 conf.set('pkgdatadir', nonemast_pkgdatadir)
