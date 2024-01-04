@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<template class="NonemastSplitButton">
+		<property name="layout-manager">
+			<object class="GtkBinLayout" />
+		</property>
+		<child>
+			<object class="GtkRevealer">
+				<binding name="reveal-child">
+					<lookup name="model-not-empty">NonemastSplitButton</lookup>
+				</binding>
+				<child>
+					<object class="GtkStack">
+						<binding name="visible-child-name">
+							<lookup name="plurality">NonemastSplitButton</lookup>
+						</binding>
+						<child>
+							<object class="GtkStackPage">
+								<property name="name">one</property>
+								<property name="child">
+									<object class="GtkButton">
+										<binding name="action-name">
+											<lookup name="review-action-current-name">NonemastSplitButton </lookup>
+										</binding>
+										<binding name="action-target">
+											<lookup name="review-action-current-target">NonemastSplitButton </lookup>
+										</binding>
+										<child>
+											<object class="AdwButtonContent">
+												<binding name="icon-name">
+													<lookup name="review-action-current-icon">NonemastSplitButton </lookup>
+												</binding>
+												<binding name="label">
+													<lookup name="review-action-current-label">NonemastSplitButton </lookup>
+												</binding>
+											</object>
+										</child>
+										<style>
+											<class name="flat"/>
+										</style>
+									</object>
+								</property>
+							</object>
+						</child>
+						<child>
+							<object class="GtkStackPage">
+								<property name="name">other</property>
+								<property name="child">
+									<object class="AdwSplitButton">
+										<binding name="action-name">
+											<lookup name="review-action-current-name">NonemastSplitButton </lookup>
+										</binding>
+										<binding name="action-target">
+											<lookup name="review-action-current-target">NonemastSplitButton </lookup>
+										</binding>
+										<binding name="menu-model">
+											<lookup name="more-review-actions-menu">NonemastSplitButton </lookup>
+										</binding>
+										<child>
+											<object class="AdwButtonContent">
+												<binding name="icon-name">
+													<lookup name="review-action-current-icon">NonemastSplitButton </lookup>
+												</binding>
+												<binding name="label">
+													<lookup name="review-action-current-label">NonemastSplitButton </lookup>
+												</binding>
+											</object>
+										</child>
+										<style>
+											<class name="flat"/>
+										</style>
+									</object>
+								</property>
+							</object>
+						</child>
+					</object>
+				</child>
+			</object>
+		</child>
+	</template>
+</interface>
