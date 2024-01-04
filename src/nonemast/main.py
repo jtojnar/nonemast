@@ -3,6 +3,7 @@
 
 import sys
 
+from gettext import gettext as _
 from gi.repository import Adw
 from gi.repository import Ggit
 from gi.repository import Gio
@@ -35,7 +36,7 @@ class NonemastApplication(Adw.Application):
 
     def do_open(self, files: Sequence[Gio.File], n_files: int, hint: str) -> None:
         if n_files != 1:
-            sys.exit("error: nonemast expects exactly one path as an argument.")
+            sys.exit(_("error: nonemast expects exactly one path as an argument."))
 
         self.do_activate(repo_path=files[0])
 
@@ -54,12 +55,13 @@ class NonemastApplication(Adw.Application):
         """Callback for the app.about action."""
         about = Adw.AboutWindow(
             transient_for=self.props.active_window,
-            application_name="Not Nearly Enough Masking Tape",
+            application_name=_("Not Nearly Enough Masking Tape"),
             application_icon="cz.ogion.Nonemast",
             license_type=Gtk.License.MIT_X11,
             version=self.version,
             developers=["Jan Tojnar"],
-            copyright="© 2022 Jan Tojnar",
+            translator_credits=_("translator-credits"),
+            copyright=_("© 2022 Jan Tojnar"),
         )
         about.present()
 

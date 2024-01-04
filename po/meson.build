@@ -4,4 +4,8 @@
 i18n.gettext(
   'nonemast',
   preset: 'glib',
+  args: [
+    '--no-wrap',
+    '--width=500',
+  ],
 )

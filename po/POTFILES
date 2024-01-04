@@ -1,6 +1,5 @@
 data/cz.ogion.Nonemast.desktop.in
 data/cz.ogion.Nonemast.appdata.xml.in
-data/cz.ogion.Nonemast.gschema.xml
 src/nonemast/main.py
 src/nonemast/update-details.ui
 src/nonemast/update-details-commit-item.ui
