@@ -23,7 +23,7 @@ python3 = python.find_installation(
 )
 
 dependency('gtk4', version: '>= 4.6.0')
-dependency('libadwaita-1', version: '>= 1.2.alpha')
+dependency('libadwaita-1', version: '>= 1.4.0')
 dependency('libgit2-glib-1.0', version: ['>= 1.0.0'])
 
 nonemast_prefix = get_option('prefix')
