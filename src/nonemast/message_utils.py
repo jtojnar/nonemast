@@ -25,7 +25,7 @@ def linkify_html(text: str) -> str:
     linkify = LinkifyIt().tlds(TLDS)
 
     if not linkify.test(text):
-        return ""
+        return html.escape(text)
 
     result = ""
     last_index = 0

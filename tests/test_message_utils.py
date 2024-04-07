@@ -9,6 +9,27 @@ except:
     from src.nonemast.message_utils import linkify_html
 
 
+def test_no_link() -> None:
+    want = """glib: 2.78.4 → 2.80.0
+
+nothing to see here
+"""
+    got = linkify_html(want)
+
+    assert got == want
+
+
+def test_escaping() -> None:
+    got = linkify_html(
+        """foo: 2.78.4 <- 2.80.0
+"""
+    )
+    want = """foo: 2.78.4 &lt;- 2.80.0
+"""
+
+    assert got == want
+
+
 def test_link_detection() -> None:
     got = linkify_html(
         """glib: 2.78.4 → 2.80.0
