@@ -16,6 +16,7 @@ import subprocess
 import tempfile
 import threading
 from .git_utils import signature_to_string
+from .message_utils import get_base_commit_subject
 from .operations.ensure_coauthors import get_missing_coauthors
 from .package_update import PackageUpdate
 
@@ -101,10 +102,6 @@ def get_merge_base(
         return repo.merge_base(oid_one, oid_two)
     except GLib.Error as e:
         return None
-
-
-def get_base_commit_subject(subject: str) -> str:
-    return re.sub(r"^(fixup! |squash! |amend! )+", "", subject)
 
 
 @Gtk.Template(resource_path="/cz/ogion/Nonemast/update-details.ui")

@@ -29,6 +29,7 @@ nonemast_sources = [
   '__init__.py',
   'git_utils.py',
   'main.py',
+  'message_utils.py',
   'operations/ensure_coauthors.py',
   'package_update.py',
   'window.py',
