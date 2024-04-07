@@ -22,3 +22,18 @@ https://gitlab.gnome.org/GNOME/glib/-/compare/2.78.4...2.80.0
 """
 
     assert got == want
+
+
+def test_unusual_domain() -> None:
+    got = linkify_html(
+        """glib: 2.78.4 → 2.80.0
+
+Changelog-Reviewed-By: Me <hello@nix.dev>
+"""
+    )
+    want = """glib: 2.78.4 → 2.80.0
+
+Changelog-Reviewed-By: Me &lt;<a href='mailto:hello@nix.dev'>hello@nix.dev</a>>
+"""
+
+    assert got == want

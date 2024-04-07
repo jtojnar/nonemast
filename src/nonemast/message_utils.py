@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 from linkify_it import LinkifyIt
+from linkify_it.tlds import TLDS
 from typing import Optional
 import html
 import re
@@ -21,7 +22,7 @@ def find_changelog_link(lines: list[str]) -> Optional[str]:
 
 
 def linkify_html(text: str) -> str:
-    linkify = LinkifyIt()
+    linkify = LinkifyIt().tlds(TLDS)
 
     if not linkify.test(text):
         return ""
