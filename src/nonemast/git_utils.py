@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 from gi.repository import Ggit
+from .helpers import unwrap
 
 
 def signature_to_string(signature: Ggit.Signature) -> str:
@@ -9,16 +10,21 @@ def signature_to_string(signature: Ggit.Signature) -> str:
 
 
 def is_commit_empty(commit: Ggit.Commit) -> bool:
-    repo: Ggit.Repository = commit.get_owner()
-    commit_tree: Ggit.Tree = commit.get_tree()
-    commit_parents: Ggit.CommitParents = commit.get_parents()
+    repo: Ggit.Repository = unwrap(commit.get_owner())
+    commit_tree: Ggit.Tree = unwrap(commit.get_tree())
+    commit_parents: Ggit.CommitParents = unwrap(commit.get_parents())
 
     if commit_parents.get_size() > 0:
-        parent_commit: Ggit.Commit = commit_parents.get(0)
-        parent_tree: Ggit.Tree = parent_commit.get_tree()
+        parent_commit: Ggit.Commit = unwrap(commit_parents.get(0))
+        parent_tree: Ggit.Tree = unwrap(parent_commit.get_tree())
 
-        diff: Ggit.Diff = Ggit.Diff.new_tree_to_tree(
-            repo, parent_tree, commit_tree, None
+        diff: Ggit.Diff = unwrap(
+            Ggit.Diff.new_tree_to_tree(
+                repo,
+                parent_tree,
+                commit_tree,
+                None,
+            )
         )
 
         return diff.get_num_deltas() == 0

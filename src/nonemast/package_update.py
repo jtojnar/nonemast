@@ -5,6 +5,7 @@ from gi.repository import Ggit
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
+from .helpers import unwrap
 from .message_utils import (
     has_changelog_reviewed_tag,
     find_changelog_link,
@@ -98,6 +99,8 @@ class PackageUpdate(GObject.Object):
     editing_stack_page = GObject.Property(type=str, default="not-editing")
     final_commit_message_rich = GObject.Property(type=str)
 
+    _commits: Gio.ListStore[CommitInfo]
+
     def __init__(
         self,
         repo: Ggit.Repository,
@@ -141,7 +144,7 @@ class PackageUpdate(GObject.Object):
     def add_commit(self, commit: Ggit.Commit) -> None:
         self._commits.append(CommitInfo(repo=self._repo, commit=commit))
 
-        subject, *msg_lines = commit.get_message().splitlines()
+        subject, *msg_lines = unwrap(commit.get_message()).splitlines()
         # Clone list so we can detect changes.
         old_message_lines = list(self._message_lines)
         if subject.startswith("fixup! "):
@@ -182,7 +185,7 @@ class PackageUpdate(GObject.Object):
         return "\n".join(self._message_lines)
 
     @final_commit_message.setter
-    def final_commit_message(self, message):
+    def final_commit_message(self, message):  # type: ignore[no-redef]
         self._message_lines = message.splitlines()
 
     @GObject.Property(type=str)
@@ -190,7 +193,7 @@ class PackageUpdate(GObject.Object):
         return self._changelog_link
 
     @changelog_link.setter
-    def changelog_link(self, changelog_link: str) -> None:
+    def changelog_link(self, changelog_link: str) -> None:  # type: ignore[no-redef]
         self._changelog_link = changelog_link
 
     @GObject.Property(type=bool, default=False)
@@ -198,9 +201,9 @@ class PackageUpdate(GObject.Object):
         return self._changes_reviewed
 
     @changes_reviewed.setter
-    def changes_reviewed(self, changes_reviewed):
+    def changes_reviewed(self, changes_reviewed):  # type: ignore[no-redef]
         self._changes_reviewed = changes_reviewed
 
-    @GObject.Property(type=Gio.ListStore)
+    @GObject.Property(type=Gio.ListStore[CommitInfo])
     def commits(self):
         return self._commits

@@ -16,6 +16,7 @@ import subprocess
 import tempfile
 import threading
 from .git_utils import signature_to_string
+from .helpers import unwrap
 from .message_utils import get_base_commit_subject
 from .operations.ensure_coauthors import get_missing_coauthors
 from .package_update import PackageUpdate
@@ -83,7 +84,7 @@ def view_commit_in_vcs_tool(
 
 
 def find_nixpkgs_remote_name(repo: Ggit.Repository) -> Optional[str]:
-    for remote_name in repo.list_remotes():
+    for remote_name in unwrap(repo.list_remotes()):
         remote = repo.lookup_remote(remote_name)
         if remote is not None:
             if remote.get_url() == NIXPKGS_REMOTE_URL:
@@ -121,7 +122,7 @@ class UpdateDetails(Gtk.Box):
         return self._update
 
     @update.setter
-    def update(self, update: Optional[PackageUpdate]) -> None:
+    def update(self, update: Optional[PackageUpdate]) -> None:  # type: ignore[no-redef]
         self._update = update
         if self._binding is not None:
             self._binding.unbind()
@@ -145,7 +146,7 @@ class NonemastWindow(Adw.ApplicationWindow):
     # Mapping between updates’ commit subjects and their indices in updates_store.
     _updates_subject_indices: dict[str, int] = {}
 
-    updates = GObject.Property(type=Gio.ListStore)
+    updates = GObject.Property(type=Gio.ListStore[PackageUpdate])
     updates_search_filter = Gtk.Template.Child()
 
     details_stack = Gtk.Template.Child()
@@ -234,9 +235,11 @@ class NonemastWindow(Adw.ApplicationWindow):
         action: Gio.SimpleAction,
         parameter: None,
     ) -> None:
-        signature = self.make_git_signature()
+        signature = unwrap(self.make_git_signature())
         for commit, authors in get_missing_coauthors(self.props.updates):
-            original_commit_subject = get_base_commit_subject(commit.get_subject())
+            original_commit_subject = get_base_commit_subject(
+                unwrap(commit.get_subject())
+            )
             trailers = "\n".join(f"Co-authored-by: {author}" for author in authors)
             commit_message = f"squash! {original_commit_subject}\n\n" + trailers
             self.create_empty_commit(
@@ -251,7 +254,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         parameter: GLib.Variant,
     ) -> None:
         original_commit_subject = parameter.get_string()
-        signature = self.make_git_signature()
+        signature = unwrap(self.make_git_signature())
         commit_message = f"squash! {original_commit_subject}\n\nChangelog-Reviewed-By: {signature_to_string(signature)}"
         self.create_empty_commit(
             target_subject=original_commit_subject,
@@ -317,9 +320,9 @@ class NonemastWindow(Adw.ApplicationWindow):
 
     def make_git_signature(self) -> Optional[Ggit.Signature]:
         try:
-            config: Ggit.Config = self._repo.get_config().snapshot()
-            author_name = config.get_string("user.name")
-            author_email = config.get_string("user.email")
+            config: Ggit.Config = unwrap(self._repo.get_config()).snapshot()
+            author_name = unwrap(config.get_string("user.name"))
+            author_email = unwrap(config.get_string("user.email"))
 
             return Ggit.Signature.new_now(
                 name=author_name,
@@ -341,18 +344,20 @@ class NonemastWindow(Adw.ApplicationWindow):
         message: str,
         author: Ggit.Signature,
     ) -> None:
-        head: Ggit.OId = self._repo.get_head().get_target()
-        current_commit: Ggit.Commit = self._repo.lookup_commit(head)
+        head: Ggit.OId = unwrap(unwrap(self._repo.get_head()).get_target())
+        current_commit: Ggit.Commit = unwrap(self._repo.lookup_commit(head))
         try:
             # Create an empty squash commit adding Changelog-Reviewed-By tag to the commit message.
-            new_commit_oid: Ggit.OId = self._repo.create_commit(
-                update_ref="HEAD",
-                author=author,
-                committer=author,
-                message_encoding="UTF-8",
-                message=message,
-                tree=current_commit.get_tree(),
-                parents=[current_commit],
+            new_commit_oid: Ggit.OId = unwrap(
+                self._repo.create_commit(
+                    update_ref="HEAD",
+                    author=author,
+                    committer=author,
+                    message_encoding="UTF-8",
+                    message=message,
+                    tree=unwrap(current_commit.get_tree()),
+                    parents=[current_commit],
+                )
             )
         except GLib.Error as error:
             make_error_dialog(
@@ -361,7 +366,7 @@ class NonemastWindow(Adw.ApplicationWindow):
                 secondary_text=error.message,
             ).show()
 
-        new_commit: Ggit.Commit = self._repo.lookup_commit(new_commit_oid)
+        new_commit: Ggit.Commit = unwrap(self._repo.lookup_commit(new_commit_oid))
         update = self.props.updates.get_item(
             self._updates_subject_indices[target_subject]
         )
@@ -406,9 +411,10 @@ class NonemastWindow(Adw.ApplicationWindow):
     def load_commit_history(self) -> None:
         updates: OrderedDict[str, list[Ggit.Commit]] = OrderedDict()
         try:
-            self._repo = Ggit.Repository.open(self._repo_path)
-            mailmap: Ggit.Mailmap = Ggit.Mailmap.new_from_repository(self._repo)
-            head = self._repo.get_head()
+            self._repo = unwrap(Ggit.Repository.open(self._repo_path))
+            mailmap = unwrap(Ggit.Mailmap.new_from_repository(self._repo))
+            head = unwrap(self._repo.get_head())
+            head_oid = unwrap(head.get_target())
 
             # Find the remote corresponding to upstream Nixpkgs
             nixpkgs_remote_name = find_nixpkgs_remote_name(self._repo)
@@ -424,24 +430,28 @@ class NonemastWindow(Adw.ApplicationWindow):
             # Determine merge bases between the current branch and master and staging branches.
             merge_base_staging = get_merge_base(
                 self._repo,
-                head.get_target(),
-                self._repo.lookup_branch(
-                    f"{nixpkgs_remote_name}/staging",
-                    Ggit.BranchType.REMOTE,
+                head_oid,
+                unwrap(
+                    self._repo.lookup_branch(
+                        f"{nixpkgs_remote_name}/staging",
+                        Ggit.BranchType.REMOTE,
+                    )
                 ).get_target(),
             )
             merge_base_master = get_merge_base(
                 self._repo,
-                head.get_target(),
-                self._repo.lookup_branch(
-                    f"{nixpkgs_remote_name}/master",
-                    Ggit.BranchType.REMOTE,
+                head_oid,
+                unwrap(
+                    self._repo.lookup_branch(
+                        f"{nixpkgs_remote_name}/master",
+                        Ggit.BranchType.REMOTE,
+                    )
                 ).get_target(),
             )
 
             # Traverse the commit list until one of the merge bases or a limit is reached.
             n_revisions = 500
-            revwalker: Ggit.RevisionWalker = Ggit.RevisionWalker.new(self._repo)
+            revwalker: Ggit.RevisionWalker = unwrap(Ggit.RevisionWalker.new(self._repo))
             revwalker.set_sort_mode(
                 Ggit.SortMode.TIME | Ggit.SortMode.TOPOLOGICAL | Ggit.SortMode.REVERSE
             )
@@ -449,12 +459,12 @@ class NonemastWindow(Adw.ApplicationWindow):
                 revwalker.hide(merge_base_master)
             if merge_base_staging is not None:
                 revwalker.hide(merge_base_staging)
-            oid = head.get_target()
-            revwalker.push(oid)
+            revwalker.push(head_oid)
 
             while (oid := revwalker.next()) is not None:
-                commit: Ggit.Commit = self._repo.lookup_commit(oid)
-                base_commit_subject = get_base_commit_subject(commit.get_subject())
+                commit: Ggit.Commit = unwrap(self._repo.lookup_commit(oid))
+                subject = unwrap(commit.get_subject())
+                base_commit_subject = get_base_commit_subject(subject)
 
                 # Add commit to the group.
                 updates.setdefault(base_commit_subject, []).append(commit)
