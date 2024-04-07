@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 _build/
+.direnv/
 installed/
 result
 
