@@ -34,7 +34,7 @@ def linkify_html(text: str) -> str:
         result += html.escape(text[last_index : match.index]) + link
         last_index = match.last_index
 
-    result += text[last_index:]
+    result += html.escape(text[last_index:])
 
     return result
 

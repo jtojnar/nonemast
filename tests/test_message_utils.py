@@ -45,6 +45,29 @@ https://gitlab.gnome.org/GNOME/glib/-/compare/2.78.4...2.80.0
     assert got == want
 
 
+def test_escaping_with_links() -> None:
+    got = linkify_html(
+        """bar: frobnicate
+
+<<<>>>
+
+<3 https://example.com/
+
+<<<>>>
+"""
+    )
+    want = """bar: frobnicate
+
+&lt;&lt;&lt;&gt;&gt;&gt;
+
+&lt;3 <a href='https://example.com/'>https://example.com/</a>
+
+&lt;&lt;&lt;&gt;&gt;&gt;
+"""
+
+    assert got == want
+
+
 def test_unusual_domain() -> None:
     got = linkify_html(
         """glib: 2.78.4 → 2.80.0
@@ -54,7 +77,7 @@ Changelog-Reviewed-By: Me <hello@nix.dev>
     )
     want = """glib: 2.78.4 → 2.80.0
 
-Changelog-Reviewed-By: Me &lt;<a href='mailto:hello@nix.dev'>hello@nix.dev</a>>
+Changelog-Reviewed-By: Me &lt;<a href='mailto:hello@nix.dev'>hello@nix.dev</a>&gt;
 """
 
     assert got == want
