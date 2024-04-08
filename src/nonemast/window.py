@@ -152,11 +152,18 @@ class NonemastWindow(Adw.ApplicationWindow):
     update_details = Gtk.Template.Child()
 
     _repo: Ggit.Repository
+    _base_revspec: Optional[str]
 
-    def __init__(self, repo_path: Gio.File, **kwargs):
+    def __init__(
+        self,
+        repo_path: Gio.File,
+        base_revspec: Optional[str],
+        **kwargs,
+    ):
         super().__init__(**kwargs)
 
         self._repo_path = repo_path
+        self._base_revspec = base_revspec
 
         self._search_query = None
         self._filter_reviewed = None
@@ -421,23 +428,32 @@ class NonemastWindow(Adw.ApplicationWindow):
                 GLib.idle_add(self.show_error, error)
                 return
 
-            # Determine merge bases between the current branch and master and staging branches.
-            merge_base_staging = get_merge_base(
-                self._repo,
-                head.get_target(),
-                self._repo.lookup_branch(
-                    f"{nixpkgs_remote_name}/staging",
-                    Ggit.BranchType.REMOTE,
-                ).get_target(),
-            )
-            merge_base_master = get_merge_base(
-                self._repo,
-                head.get_target(),
-                self._repo.lookup_branch(
-                    f"{nixpkgs_remote_name}/master",
-                    Ggit.BranchType.REMOTE,
-                ).get_target(),
-            )
+            bases = []
+            if self._base_revspec is not None:
+                base = self._repo.revparse(self._base_revspec).get_id()
+                bases.append(base)
+            else:
+                # Determine merge bases between the current branch and master and staging branches.
+                merge_base_staging = get_merge_base(
+                    self._repo,
+                    head.get_target(),
+                    self._repo.lookup_branch(
+                        f"{nixpkgs_remote_name}/staging",
+                        Ggit.BranchType.REMOTE,
+                    ).get_target(),
+                )
+                if merge_base_staging is not None:
+                    bases.append(merge_base_staging)
+                merge_base_master = get_merge_base(
+                    self._repo,
+                    head.get_target(),
+                    self._repo.lookup_branch(
+                        f"{nixpkgs_remote_name}/master",
+                        Ggit.BranchType.REMOTE,
+                    ).get_target(),
+                )
+                if merge_base_master is not None:
+                    bases.append(merge_base_master)
 
             # Traverse the commit list until one of the merge bases or a limit is reached.
             n_revisions = 500
@@ -445,10 +461,8 @@ class NonemastWindow(Adw.ApplicationWindow):
             revwalker.set_sort_mode(
                 Ggit.SortMode.TIME | Ggit.SortMode.TOPOLOGICAL | Ggit.SortMode.REVERSE
             )
-            if merge_base_master is not None:
-                revwalker.hide(merge_base_master)
-            if merge_base_staging is not None:
-                revwalker.hide(merge_base_staging)
+            for base in bases:
+                revwalker.hide(base)
             oid = head.get_target()
             revwalker.push(oid)
 
