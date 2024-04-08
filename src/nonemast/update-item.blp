@@ -10,6 +10,7 @@ template ListItem {
     orientation: horizontal;
 
     Label {
+      wrap: true;
       xalign: 0;
       label: bind template.item as <$PackageUpdate>.subject;
     }
