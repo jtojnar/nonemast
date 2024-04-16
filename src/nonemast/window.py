@@ -53,7 +53,8 @@ def open_commit_message_in_editor(parent: Gtk.Window, path: Path) -> None:
 
         def show_error():
             make_error_dialog(
-                parent, "Unable to find a text editor for editing commit messages."
+                parent,
+                _("Unable to find a text editor for editing commit messages."),
             ).show()
 
         GLib.idle_add(show_error)
@@ -76,7 +77,8 @@ def view_commit_in_vcs_tool(
 
     if viewer is None:
         make_error_dialog(
-            parent, "Unable to find a tool for viewing Git commits."
+            parent,
+            _("Unable to find a tool for viewing Git commits."),
         ).show()
     else:
         subprocess.run(viewer, cwd=repo_path.get_path())
@@ -335,8 +337,19 @@ class NonemastWindow(Adw.ApplicationWindow):
         except:
             make_error_dialog(
                 parent=self,
-                text="Missing Git Identity",
-                secondary_text="Please <a href='https://www.git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup#_your_identity'>configure Git with your name and e-mail address</a> for commit authorship.",
+                text=_("Missing Git Identity"),
+                secondary_text=_(
+                    "Please %(your_identity_link_start)s configure Git with your name and e-mail address %(your_identity_link_end)s for commit authorship."
+                )
+                % {
+                    "your_identity_link_start": "<a href='%(your_identity_url)s'>",
+                    "your_identity_link_end": "</a>",
+                }
+                % {
+                    "your_identity_url": _(
+                        "https://www.git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup#_your_identity"
+                    )
+                },
                 secondary_use_markup=True,
             ).show()
 
@@ -364,7 +377,7 @@ class NonemastWindow(Adw.ApplicationWindow):
         except GLib.Error as error:
             make_error_dialog(
                 parent=self,
-                text="Error Creating a Commit",
+                text=_("Error Creating a Commit"),
                 secondary_text=error.message,
             ).show()
 
@@ -421,7 +434,8 @@ class NonemastWindow(Adw.ApplicationWindow):
             nixpkgs_remote_name = find_nixpkgs_remote_name(self._repo)
             if nixpkgs_remote_name is None:
                 error = GLib.Error(
-                    f"Could not find a Git remote with URL “{NIXPKGS_REMOTE_URL}”.",
+                    _("Could not find a Git remote with URL “%(remote_url)s”.")
+                    % {"remote_url": NIXPKGS_REMOTE_URL},
                     "nonemast",
                     1,
                 )

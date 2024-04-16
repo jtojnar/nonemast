@@ -1,0 +1,157 @@
+# Czech translations for nonemast package.
+# Copyright (C) 2023 THE nonemast'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nonemast package.
+# Automatically generated, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nonemast\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-16 23:19+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: data/cz.ogion.Nonemast.desktop.in:3 src/nonemast/main.py:58
+#: src/nonemast/window.ui:21
+msgid "Not Nearly Enough Masking Tape"
+msgstr "Ani zdaleka ne dost maskovací pásky"
+
+#: data/cz.ogion.Nonemast.appdata.xml.in:7
+msgid "Tool for reviewing GNOME update Nixpkgs PRs."
+msgstr ""
+"Nástroj pro kontrolu požadavků na začlenění do Nixpkgs obsahujících "
+"aktualizace GNOME."
+
+#: data/cz.ogion.Nonemast.appdata.xml.in:12
+msgid "Main view of GNOME 43 update"
+msgstr "Hlavní pohled na aktualizaci GNOME 43"
+
+#: src/nonemast/main.py:39
+msgid "error: nonemast expects exactly one path as an argument."
+msgstr "chyba: nonemast očekává právě jednu cestu jako argument."
+
+#: src/nonemast/main.py:63
+msgid "translator-credits"
+msgstr "Jan Tojnar"
+
+#: src/nonemast/main.py:64
+msgid "© 2022 Jan Tojnar"
+msgstr "© 2022 Jan Tojnar"
+
+#: src/nonemast/update-details.ui:7
+msgid "Changelog"
+msgstr "Seznam změn"
+
+#: src/nonemast/update-details.ui:34
+msgid "Mark as reviewed"
+msgstr "Označit jako zkontrolované"
+
+#: src/nonemast/update-details.ui:48
+msgid "Final commit message"
+msgstr "Výsledná zpráva revize"
+
+#: src/nonemast/update-details.ui:82
+msgid "Edit"
+msgstr "Upravit"
+
+#: src/nonemast/update-details.ui:97
+msgid "Currently editing"
+msgstr "Přávě upravováno"
+
+#: src/nonemast/update-details.ui:108
+msgid "Commits"
+msgstr "Revize"
+
+#: src/nonemast/update-details-commit-item.ui:26
+msgid "View in external tool"
+msgstr "Zobrazit v externím nástroji"
+
+#: src/nonemast/update-item.ui:34
+msgid "Changelog reviewed"
+msgstr "Změny zkontrolovány"
+
+#: src/nonemast/window.py:56
+msgid "Unable to find a text editor for editing commit messages."
+msgstr "Nelze najít textový editor pro úpravu zpráv revizí."
+
+#: src/nonemast/window.py:80
+msgid "Unable to find a tool for viewing Git commits."
+msgstr "Nelze najít nástroj pro zobrazování revizí Gitu."
+
+#: src/nonemast/window.py:336
+msgid "Missing Git Identity"
+msgstr "Chybějící totožnost pro Git."
+
+#: src/nonemast/window.py:338
+#, python-format
+msgid ""
+"Please %(your_identity_link_start)s configure Git with your name and e-mail "
+"address %(your_identity_link_end)s for commit authorship."
+msgstr ""
+
+#: src/nonemast/window.py:346
+msgid ""
+"https://www.git-scm.com/book/en/v2/Getting-Started-First-Time-Git-"
+"Setup#_your_identity"
+msgstr ""
+"https://www.git-scm.com/book/cs/v2/%C3%9Avod-Prvn%C3%AD-nastaven%C3%AD-"
+"syst%C3%A9mu-Git#_va%C5%A1e_toto%C5%BEnost"
+
+#: src/nonemast/window.py:376
+msgid "Error Creating a Commit"
+msgstr ""
+
+#: src/nonemast/window.py:433
+#, python-format
+msgid "Could not find a Git remote with URL “%(remote_url)s”."
+msgstr ""
+
+#: src/nonemast/window.ui:29
+msgid "Search"
+msgstr ""
+
+#: src/nonemast/window.ui:36
+msgid "Filter"
+msgstr "Filtr"
+
+#: src/nonemast/window.ui:66
+msgid "Loading commits…"
+msgstr "Načítání revizí…"
+
+#: src/nonemast/window.ui:79
+msgid "Error obtaining commit list."
+msgstr "Chyba získávání seznamu revyzí"
+
+#: src/nonemast/window.ui:179
+msgid "No updates selected."
+msgstr "Nevybrány žádné aktualizace"
+
+#: src/nonemast/window.ui:215
+msgid "Ensure _Co-authors"
+msgstr "Vynutit spolu_autorství"
+
+#: src/nonemast/window.ui:221
+msgid "_Keyboard Shortcuts"
+msgstr "_Klávesové zkratky"
+
+#: src/nonemast/window.ui:225
+msgid "_About Not Nearly Enough Masking Tape"
+msgstr "_O programu Nonemast"
+
+#: src/nonemast/window.ui:233
+msgid "_All"
+msgstr "_Vše"
+
+#: src/nonemast/window.ui:238
+msgid "_Reviewed"
+msgstr "Z_kontrolováno"
+
+#: src/nonemast/window.ui:243
+msgid "_Unreviewed"
+msgstr "_Nezkontrolováno"
