@@ -255,7 +255,7 @@ class PackageUpdate(GObject.Object):
             self.notify("final-commit-message")
 
         self.props.changes_reviewed = any(
-            has_trailer(action.trailer, line)
+            has_trailer(action.trailer, line, signature_to_string(self._window.make_git_signature()))
             for line in new_message_lines
             for action in self._window.review_actions
             if action.sufficient
