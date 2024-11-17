@@ -75,8 +75,7 @@ class NonemastApplication(Adw.Application):
         _parameter: None,
     ) -> None:
         """Callback for the app.about action."""
-        about = Adw.AboutWindow(
-            transient_for=self.props.active_window,
+        about = Adw.AboutDialog(
             application_name="Not Nearly Enough Masking Tape",
             application_icon="cz.ogion.Nonemast",
             license_type=Gtk.License.MIT_X11,
@@ -84,7 +83,7 @@ class NonemastApplication(Adw.Application):
             developers=["Jan Tojnar"],
             copyright="© 2022 Jan Tojnar",
         )
-        about.present()
+        about.present(self.props.active_window)
 
     T = TypeVar("T", bound=GLib.Variant | None)
 
