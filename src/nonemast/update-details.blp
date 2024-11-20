@@ -12,22 +12,8 @@ template $UpdateDetails: Box {
       title: bind template.update as <$PackageUpdate>.changelog-link;
     }
 
-    header-suffix: Revealer {
-      reveal-child: bind template.changes-not-reviewed;
-
-      Button {
-        action-name: 'win.mark-as-reviewed';
-        action-target: bind template.update as <$PackageUpdate>.subject-gvariant;
-
-        child: Adw.ButtonContent {
-          icon-name: 'emblem-ok-symbolic';
-          label: _('Mark as reviewed');
-        };
-
-        styles [
-          "flat",
-        ]
-      }
+    header-suffix: $NonemastSplitButton {
+      menu-model: bind template.update as <$PackageUpdate>.review-actions-menu;
     };
   }
 
