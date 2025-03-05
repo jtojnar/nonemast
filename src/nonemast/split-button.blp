@@ -1,0 +1,51 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $NonemastSplitButton {
+  layout-manager: BinLayout {};
+
+  Revealer {
+    reveal-child: bind template.model-not-empty no-sync-create;
+
+    Stack {
+      visible-child-name: bind template.plurality no-sync-create;
+
+      StackPage {
+        name: 'one';
+
+        child: Button {
+          action-name: bind template.review-action-current-name no-sync-create;
+          action-target: bind template.review-action-current-target no-sync-create;
+
+          Adw.ButtonContent {
+            icon-name: bind template.review-action-current-icon no-sync-create;
+            label: bind template.review-action-current-label no-sync-create;
+          }
+
+          styles [
+            "flat",
+          ]
+        };
+      }
+
+      StackPage {
+        name: 'other';
+
+        child: Adw.SplitButton {
+          action-name: bind template.review-action-current-name no-sync-create;
+          action-target: bind template.review-action-current-target no-sync-create;
+          menu-model: bind template.more-review-actions-menu no-sync-create;
+
+          Adw.ButtonContent {
+            icon-name: bind template.review-action-current-icon no-sync-create;
+            label: bind template.review-action-current-label no-sync-create;
+          }
+
+          styles [
+            "flat",
+          ]
+        };
+      }
+    }
+  }
+}

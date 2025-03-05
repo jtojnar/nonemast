@@ -11,11 +11,11 @@ import subprocess
 import tempfile
 
 try:
-    from ..src.nonemast.package_update import PackageUpdate
+    from ..src.nonemast.package_update import CommitSquasher
 except:
     # For some reason, the above fails with the following inside nix-build:
     #     ImportError: attempted relative import beyond top-level package
-    from src.nonemast.package_update import PackageUpdate
+    from src.nonemast.package_update import CommitSquasher
 
 
 class FakeCommit(Ggit.Commit):
@@ -70,16 +70,12 @@ def check_autosquashing(commit_messages: list[str]) -> None:
         )
         for message in commit_messages
     ]
-    update = PackageUpdate(
-        subject="Foo",
-        commits=commits,
-        repo=None,
-    )
+    squashed_message = "\n".join(CommitSquasher(commit_messages).get_lines())
 
     expected = autosquash_commits_with_git(commit_messages)
     # Git forces two line breaks at the end.
     expected = [message.rstrip("\n") for message in expected]
-    assert [update.props.final_commit_message] == expected
+    assert [squashed_message] == expected
 
 
 def test_autosquashing_fixup() -> None:
