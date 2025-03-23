@@ -399,8 +399,12 @@ class NonemastWindow(Adw.ApplicationWindow):
             )
             self.props.updates.append(update)
             index += 1
-        self.updates_list_stack.set_visible_child_name("list")
-        self.details_stack.set_visible_child_name("details")
+
+        if index == 0:
+            self.updates_list_stack.set_visible_child_name("empty")
+        else:
+            self.updates_list_stack.set_visible_child_name("list")
+            self.details_stack.set_visible_child_name("details")
 
         return GLib.SOURCE_REMOVE
 

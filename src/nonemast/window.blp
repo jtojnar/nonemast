@@ -69,6 +69,16 @@ template $NonemastWindow: Adw.ApplicationWindow {
         }
 
         StackPage {
+          name: 'empty';
+
+          child: Adw.StatusPage updates_list_empty {
+            icon-name: 'box-dotted-symbolic';
+            title: _('No commits found.');
+            description: _('Make sure you are reviewing the correct branch, and that <tt>staging</tt> and <tt>master</tt> branches do not contain the commits you want to review.');
+          };
+        }
+
+        StackPage {
           name: 'list';
 
           child: Box {
